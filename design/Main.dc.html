@@ -1,0 +1,1139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    a { color: #3794ff; text-decoration: none; }
+    a:hover { color: #5db0ff; }
+
+    .app {
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #1e1e1e;
+      color: #cccccc;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      overflow: hidden;
+      position: relative;
+    }
+    .mono { font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace; }
+
+    /* Titlebar */
+    .titlebar {
+      height: 36px;
+      min-height: 36px;
+      background: #323233;
+      border-bottom: 1px solid #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .titlebar-left { display: flex; align-items: center; gap: 8px; color: #e6e6e6; }
+    .app-icon { display: flex; color: #3794ff; }
+    .app-name { font-size: 12.5px; font-weight: 600; letter-spacing: .2px; }
+    .titlebar-center { font-size: 12px; color: #9d9d9d; }
+    .titlebar-right { display: flex; align-items: center; gap: 8px; }
+    .btn-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: #3c3c3c; border: 1px solid #4a4a4a; color: #cccccc;
+      border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer;
+    }
+    .btn-chip:hover { background: #45494e; }
+    .btn-chip span { color: #9d9d9d; font-size: 11px; }
+
+    /* Main row */
+    .main-row { flex: 1; display: flex; min-height: 0; }
+
+    /* Activity bar */
+    .activitybar {
+      width: 48px; min-width: 48px; background: #333333;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 8px 0; gap: 4px; border-right: 1px solid #1a1a1a;
+    }
+    .activity-item {
+      width: 34px; height: 34px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative; color: #9d9d9d;
+    }
+    .activity-item:hover { background: #3f3f3f; }
+    .activity-item.active { background: #3f3f3f; }
+    .activity-item.active::before {
+      content: ""; position: absolute; left: -8px; top: 4px; bottom: 4px;
+      width: 2px; background: #ffffff; border-radius: 2px;
+    }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: #ffffff; font-size: 11px; font-weight: 700; letter-spacing: .3px;
+    }
+    .avatar-add { background: #3c3c3c; color: #9d9d9d; }
+    .activity-item:hover .avatar-add { color: #ffffff; }
+    .activity-spacer { flex: 1; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px; min-width: 250px; background: #252526;
+      border-right: 1px solid #1a1a1a; display: flex; flex-direction: column;
+      min-height: 0;
+    }
+    .sidebar-header {
+      padding: 10px 8px 2px 14px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .sidebar-header-title {
+      font-size: 11px; font-weight: 700; color: #cccccc; text-transform: uppercase; letter-spacing: .6px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .icon-btn {
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 22px; height: 22px; border-radius: 4px; border: none;
+      background: transparent; color: #9d9d9d; cursor: pointer;
+    }
+    .icon-btn:hover { background: #3c3c3c; color: #ffffff; }
+    .sidebar-endpoint {
+      padding: 0 14px 10px; font-size: 11px; color: #7d7d7d;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .tree { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+    .tree::-webkit-scrollbar { width: 10px; }
+    .tree::-webkit-scrollbar-thumb { background: #3e3e42; border-radius: 5px; }
+    .tree-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; cursor: pointer; color: #cccccc;
+      white-space: nowrap;
+    }
+    .tree-row:hover { background: #2a2d2e; }
+    .tree-row.active { background: #37373d; color: #ffffff; }
+    .tree-collection { font-weight: 500; color: #d6d6d6; }
+    .chevron-wrap { display: flex; color: #9d9d9d; transition: transform .12s ease; }
+    .chevron-wrap.open { transform: rotate(90deg); }
+    .folder-icon { display: flex; color: #c09553; flex-shrink: 0; }
+    .doc-icon { display: flex; color: #9d9d9d; flex-shrink: 0; margin-left: 16px; }
+    .doc-icon-sm { display: flex; color: #9d9d9d; flex-shrink: 0; }
+    .tree-label { flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+    .tree-count { color: #7d7d7d; font-size: 11px; }
+    .tree-children { display: flex; flex-direction: column; }
+
+    /* Editor column */
+    .editor-col { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #1e1e1e; }
+
+    .tabbar {
+      display: flex; background: #252526; border-bottom: 1px solid #1a1a1a;
+      overflow-x: auto; min-height: 35px;
+    }
+    .tabbar::-webkit-scrollbar { height: 6px; }
+    .tab {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0 10px; height: 35px; min-width: 120px; max-width: 200px;
+      background: #2d2d2d; border-right: 1px solid #1a1a1a; cursor: pointer;
+      color: #969696; font-size: 12.5px;
+    }
+    .tab:hover { background: #2a2a2a; color: #cccccc; }
+    .tab.active {
+      background: #1e1e1e; color: #ffffff;
+      box-shadow: inset 0 -2px 0 #3794ff;
+    }
+    .tab-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dirty-dot { width: 7px; height: 7px; border-radius: 50%; background: #cccccc; flex-shrink: 0; }
+    .tab.active .dirty-dot { background: #ffffff; }
+    .tab-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 4px; border: none;
+      background: transparent; color: inherit; cursor: pointer; flex-shrink: 0;
+    }
+    .tab-close:hover { background: #45494e; color: #ffffff; }
+
+    .editor-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
+    .editor-area::-webkit-scrollbar { width: 12px; }
+    .editor-area::-webkit-scrollbar-thumb { background: #3e3e42; border-radius: 6px; }
+
+    .editor-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px; border-bottom: 1px solid #2b2b2b;
+      position: sticky; top: 0; background: #1e1e1e; z-index: 2;
+    }
+    .breadcrumb { font-size: 12px; color: #9d9d9d; }
+    .btn-save {
+      display: flex; align-items: center; gap: 6px;
+      background: #3c3c3c; color: #7d7d7d; border: 1px solid #4a4a4a;
+      border-radius: 4px; padding: 5px 12px; font-size: 12.5px; cursor: default;
+    }
+    .btn-save.enabled { background: #0e639c; color: #ffffff; border-color: #0e639c; cursor: pointer; }
+    .btn-save.enabled:hover { background: #1177bb; }
+
+    .editor-form { max-width: 640px; width: 100%; margin: 0 auto; padding: 24px 24px 60px; }
+    .field-row { margin-bottom: 18px; }
+    .field-label { display: block; font-size: 12px; font-weight: 600; color: #a8a8a8; margin-bottom: 6px; }
+    .input, .textarea, .select {
+      width: 100%; background: #3c3c3c; border: 1px solid #3c3c3c; color: #ffffff;
+      border-radius: 3px; padding: 7px 10px; font-size: 13px; font-family: inherit;
+      outline: none;
+    }
+    .input:focus, .textarea:focus, .select:focus { border-color: #007fd4; }
+    .textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
+    .select { appearance: none; cursor: pointer; }
+
+    .toggle {
+      width: 40px; height: 22px; border-radius: 11px; border: none; cursor: pointer;
+      background: #3c3c3c; position: relative; padding: 0;
+    }
+    .toggle.on { background: #0e639c; }
+    .toggle-knob {
+      position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+      border-radius: 50%; background: #cccccc; transition: left .12s ease;
+    }
+    .toggle.on .toggle-knob { left: 20px; background: #ffffff; }
+
+    .tags-field { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .tag-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: #37373d; color: #d6d6d6; border-radius: 3px;
+      padding: 3px 4px 3px 9px; font-size: 12px;
+    }
+    .tag-remove {
+      border: none; background: transparent; color: #9d9d9d; cursor: pointer;
+      width: 16px; height: 16px; border-radius: 3px; font-size: 13px; line-height: 1;
+    }
+    .tag-remove:hover { background: #4a4a4a; color: #ffffff; }
+    .tag-input {
+      flex: 1; min-width: 120px; background: transparent; border: none; color: #ffffff;
+      font-size: 13px; padding: 5px 2px; outline: none;
+    }
+
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #6f6f6f; gap: 10px; text-align: center; padding: 40px;
+    }
+    .empty-icon { color: #3c3c3c; margin-bottom: 6px; }
+    .empty-title { font-size: 20px; color: #9d9d9d; font-weight: 600; }
+    .empty-sub { font-size: 13px; max-width: 360px; }
+    .btn-ghost {
+      display: flex; align-items: center; gap: 8px; margin-top: 8px;
+      background: transparent; border: 1px solid #3c3c3c; color: #cccccc;
+      border-radius: 4px; padding: 7px 14px; font-size: 12.5px; cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: #6b6b6b; }
+
+    /* SQL console */
+    .console-view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .console-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px; border-bottom: 1px solid #2b2b2b;
+    }
+    .console-toolbar-right { display: flex; align-items: center; gap: 12px; }
+    .console-hint { font-size: 11px; color: #7d7d7d; }
+    .console-tables {
+      display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 24px;
+      border-bottom: 1px solid #2b2b2b;
+    }
+    .table-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: #2d2d2d; border: 1px solid #3c3c3c; color: #cccccc;
+      border-radius: 4px; padding: 5px 10px; font-size: 12px; cursor: pointer;
+    }
+    .table-chip:hover { border-color: #6b6b6b; color: #ffffff; }
+    .table-chip-count { color: #7d7d7d; font-size: 11px; }
+    .console-input {
+      margin: 14px 24px 0; background: #101010; border: 1px solid #3c3c3c; border-radius: 4px;
+      color: #d4d4d4; font-size: 13px; padding: 12px 14px; min-height: 84px;
+      resize: vertical; outline: none; line-height: 1.55;
+    }
+    .console-input:focus { border-color: #007fd4; }
+    .console-results { flex: 1; overflow: auto; margin: 14px 24px 30px; }
+    .console-status { color: #9d9d9d; font-size: 12.5px; padding: 6px 2px; }
+    .console-placeholder { color: #6f6f6f; font-size: 12.5px; padding: 20px 2px; }
+    .console-error {
+      color: #f48771; background: rgba(244,135,113,.08); border: 1px solid rgba(244,135,113,.35);
+      border-radius: 4px; padding: 10px 12px; font-size: 12.5px;
+    }
+    .console-meta { color: #7d7d7d; font-size: 11.5px; margin-bottom: 8px; }
+    .console-table-wrap { overflow: auto; border: 1px solid #2b2b2b; border-radius: 4px; }
+    .console-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+    .console-table th {
+      text-align: left; background: #252526; color: #9d9d9d; font-weight: 600;
+      padding: 7px 10px; border-bottom: 1px solid #3c3c3c; white-space: nowrap;
+      position: sticky; top: 0;
+    }
+    .console-table td { padding: 6px 10px; border-bottom: 1px solid #262626; color: #cccccc; white-space: nowrap; }
+    .console-table tr:hover td { background: #252526; }
+
+    /* Status bar */
+    .statusbar {
+      height: 24px; min-height: 24px; background: #007acc; color: #ffffff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 10px; font-size: 12px; -webkit-user-select: none; user-select: none;
+    }
+    .status-left, .status-right { display: flex; align-items: center; gap: 14px; height: 100%; }
+    .status-item { display: flex; align-items: center; gap: 6px; }
+    .status-env {
+      border: none; background: rgba(255,255,255,.12); color: #ffffff;
+      border-radius: 3px; padding: 1px 8px; cursor: pointer; font-size: 11.5px; font-weight: 600;
+    }
+    .status-env:hover { background: rgba(255,255,255,.22); }
+    .status-env.staging { background: rgba(210,153,34,.35); }
+    .status-dot-wrap { display: flex; align-items: center; gap: 5px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #89d185; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      display: flex; align-items: flex-start; justify-content: center; padding-top: 14vh;
+      z-index: 40;
+    }
+    .modal {
+      width: 420px; max-width: 90vw; background: #252526; border: 1px solid #454545;
+      border-radius: 6px; padding: 18px 18px 16px; box-shadow: 0 8px 30px rgba(0,0,0,.5);
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .modal-title { font-size: 14px; font-weight: 700; color: #ffffff; }
+    .modal-close {
+      border: none; background: transparent; color: #9d9d9d; cursor: pointer;
+      width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: #3c3c3c; color: #ffffff; }
+    .modal-sub { font-size: 12px; color: #9d9d9d; margin-bottom: 16px; line-height: 1.5; }
+    .modal-label { display: block; font-size: 11.5px; font-weight: 600; color: #a8a8a8; margin: 12px 0 5px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .btn-primary {
+      background: #3c3c3c; color: #7d7d7d; border: 1px solid #4a4a4a;
+      border-radius: 4px; padding: 6px 14px; font-size: 12.5px; cursor: default;
+    }
+    .btn-primary.enabled { background: #0e639c; color: #ffffff; border-color: #0e639c; cursor: pointer; }
+    .btn-primary.enabled:hover { background: #1177bb; }
+
+    /* Command palette */
+    .palette-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.35);
+      display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh;
+      z-index: 50;
+    }
+    .palette {
+      width: 560px; max-width: 92vw; background: #252526; border: 1px solid #454545;
+      border-radius: 6px; box-shadow: 0 10px 38px rgba(0,0,0,.55); overflow: hidden;
+    }
+    .palette-search { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #3c3c3c; color: #9d9d9d; }
+    .palette-input { flex: 1; background: transparent; border: none; color: #ffffff; font-size: 14px; outline: none; }
+    .palette-list { max-height: 320px; overflow-y: auto; padding: 6px; }
+    .palette-item { padding: 8px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; color: #cccccc; }
+    .palette-item:hover { background: #04395e; color: #ffffff; }
+    .palette-empty { padding: 16px; text-align: center; color: #7d7d7d; font-size: 12.5px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 40px; right: 20px; background: #0e639c; color: #ffffff;
+      padding: 10px 16px; border-radius: 5px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(0,0,0,.4);
+      z-index: 60; max-width: 320px;
+    }
+  </style>
+</helmet>
+
+<div class="app">
+
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <span class="app-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="currentColor"/></svg></span>
+      <span class="app-name">Master Admin Panel</span>
+    </div>
+    <div class="titlebar-center">{{breadcrumb}}</div>
+    <div class="titlebar-right">
+      <button type="button" class="btn-chip" onClick="{{openPalette}}">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M10.3 10.3L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>Ctrl K</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-row">
+
+    <div class="activitybar">
+      <sc-for list="{{activityItems}}" as="site" hint-placeholder-count="2">
+        <div class="activity-item {{site.activeClass}}" onClick="{{site.onClick}}" title="{{site.name}}">
+          <span class="avatar" style="background: {{site.color}}">{{site.initials}}</span>
+        </div>
+      </sc-for>
+      <div class="activity-spacer"></div>
+      <div class="activity-item" onClick="{{openConnect}}" title="Connect new site">
+        <span class="avatar avatar-add">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-header-title">{{activeSiteName}}</span>
+        <button type="button" class="icon-btn" title="Open SQL Console" onClick="{{openConsoleForActive}}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" stroke-width="1.2"/></svg>
+        </button>
+      </div>
+      <div class="sidebar-endpoint mono">{{activeSiteEndpoint}}</div>
+      <div class="tree">
+        <sc-for list="{{sidebarCollections}}" as="col" hint-placeholder-count="3">
+          <div class="tree-group">
+            <div class="tree-row tree-collection" onClick="{{col.onToggle}}">
+              <span class="chevron-wrap {{col.chevronClass}}">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="folder-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="tree-label">{{col.name}}</span>
+              <span class="tree-count">{{col.count}}</span>
+            </div>
+            <sc-if value="{{col.expanded}}" hint-placeholder-val="{{true}}">
+              <div class="tree-children">
+                <sc-for list="{{col.records}}" as="rec" hint-placeholder-count="3">
+                  <div class="tree-row tree-record {{rec.activeClass}}" onClick="{{rec.onClick}}">
+                    <span class="doc-icon">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                    </span>
+                    <span class="tree-label">{{rec.displayTitle}}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div class="editor-col">
+      <div class="tabbar">
+        <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="2">
+          <div class="tab {{tab.activeClass}}" onClick="{{tab.onClick}}">
+            <sc-if value="{{tab.isConsole}}" hint-placeholder-val="{{false}}">
+              <span class="doc-icon-sm">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" stroke-width="1.2"/></svg>
+              </span>
+            </sc-if>
+            <sc-if value="{{tab.isRecord}}" hint-placeholder-val="{{true}}">
+              <span class="doc-icon-sm">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              </span>
+            </sc-if>
+            <span class="tab-label">{{tab.displayTitle}}</span>
+            <sc-if value="{{tab.dirty}}" hint-placeholder-val="{{false}}">
+              <span class="dirty-dot"></span>
+            </sc-if>
+            <button type="button" class="tab-close" onClick="{{tab.onClose}}">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+
+      <div class="editor-area">
+        <sc-if value="{{showRecordForm}}" hint-placeholder-val="{{true}}">
+          <div class="editor-toolbar">
+            <span class="breadcrumb">{{breadcrumb}}</span>
+            <button type="button" class="btn-save {{saveEnabledClass}}" onClick="{{saveActive}}">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 2h9l3 3v9a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5 2v4h5V2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              Save
+            </button>
+          </div>
+          <div class="editor-form">
+            <sc-for list="{{activeFields}}" as="field" hint-placeholder-count="4">
+              <div class="field-row">
+                <label class="field-label">{{field.label}}</label>
+                <sc-if value="{{field.isText}}" hint-placeholder-val="{{true}}">
+                  <input class="input" type="text" value="{{field.value}}" onInput="{{field.onInput}}" />
+                </sc-if>
+                <sc-if value="{{field.isTextarea}}" hint-placeholder-val="{{false}}">
+                  <textarea class="textarea" value="{{field.value}}" onInput="{{field.onInput}}"></textarea>
+                </sc-if>
+                <sc-if value="{{field.isBoolean}}" hint-placeholder-val="{{false}}">
+                  <button type="button" class="toggle {{field.toggleClass}}" onClick="{{field.onToggle}}">
+                    <span class="toggle-knob"></span>
+                  </button>
+                </sc-if>
+                <sc-if value="{{field.isEnum}}" hint-placeholder-val="{{false}}">
+                  <select class="select" value="{{field.value}}" onChange="{{field.onSelect}}">
+                    <sc-for list="{{field.options}}" as="opt" hint-placeholder-count="3">
+                      <option value="{{opt.value}}">{{opt.label}}</option>
+                    </sc-for>
+                  </select>
+                </sc-if>
+                <sc-if value="{{field.isTags}}" hint-placeholder-val="{{false}}">
+                  <div class="tags-field">
+                    <sc-for list="{{field.tagList}}" as="tag" hint-placeholder-count="2">
+                      <span class="tag-chip">{{tag.value}}<button type="button" class="tag-remove" onClick="{{tag.onRemove}}">&#215;</button></span>
+                    </sc-for>
+                    <input class="tag-input" type="text" placeholder="Add tag + Enter" value="{{field.tagDraft}}" onInput="{{field.onTagDraftInput}}" onKeyDown="{{field.onAddTagKeyDown}}" />
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showConsole}}" hint-placeholder-val="{{false}}">
+          <div class="console-view">
+            <div class="console-toolbar">
+              <span class="breadcrumb">{{breadcrumb}}</span>
+              <div class="console-toolbar-right">
+                <span class="console-hint">Ctrl Enter to run</span>
+                <button type="button" class="btn-save enabled" onClick="{{runConsole}}">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 2.5v11l10-5.5-10-5.5z" fill="currentColor"/></svg>
+                  Run
+                </button>
+              </div>
+            </div>
+            <div class="console-tables">
+              <sc-for list="{{consoleTables}}" as="tbl" hint-placeholder-count="3">
+                <button type="button" class="table-chip" onClick="{{tbl.onClick}}">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" stroke-width="1.2"/></svg>
+                  {{tbl.name}}
+                  <span class="table-chip-count">{{tbl.count}}</span>
+                </button>
+              </sc-for>
+            </div>
+            <textarea class="console-input mono" spellcheck="false" value="{{consoleQuery}}" onInput="{{onConsoleQueryInput}}" onKeyDown="{{onConsoleKeyDown}}"></textarea>
+            <div class="console-results">
+              <sc-if value="{{consoleRunning}}" hint-placeholder-val="{{false}}">
+                <div class="console-status">Running query…</div>
+              </sc-if>
+              <sc-if value="{{consoleHasError}}" hint-placeholder-val="{{false}}">
+                <div class="console-error mono">{{consoleErrorMsg}}</div>
+              </sc-if>
+              <sc-if value="{{consoleHasRows}}" hint-placeholder-val="{{false}}">
+                <div class="console-meta">{{consoleRowCount}} rows &middot; {{consoleElapsed}} ms</div>
+                <div class="console-table-wrap">
+                  <table class="console-table">
+                    <thead>
+                      <tr>
+                        <sc-for list="{{consoleColumns}}" as="colName" hint-placeholder-count="3">
+                          <th>{{colName}}</th>
+                        </sc-for>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <sc-for list="{{consoleRows}}" as="row" hint-placeholder-count="3">
+                        <tr>
+                          <sc-for list="{{row}}" as="cell" hint-placeholder-count="3">
+                            <td>{{cell}}</td>
+                          </sc-for>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+              </sc-if>
+              <sc-if value="{{consoleEmptyResult}}" hint-placeholder-val="{{false}}">
+                <div class="console-status">Query returned 0 rows.</div>
+              </sc-if>
+              <sc-if value="{{consoleNoResultsYet}}" hint-placeholder-val="{{true}}">
+                <div class="console-placeholder">Run a query to see results here. Click a table above, or try SHOW TABLES;</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{noActiveTab}}" hint-placeholder-val="{{false}}">
+          <div class="empty-state">
+            <span class="empty-icon">
+              <svg width="40" height="40" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
+            </span>
+            <div class="empty-title">Master Admin Panel</div>
+            <div class="empty-sub">Select a record from the sidebar, connect another site, or open the command palette to jump anywhere.</div>
+            <button type="button" class="btn-ghost" onClick="{{openPalette}}">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M10.3 10.3L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Open Command Palette &nbsp;Ctrl K
+            </button>
+            <button type="button" class="btn-ghost" onClick="{{openConsoleForActive}}">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" stroke-width="1.2"/></svg>
+              Open SQL Console
+            </button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status-left">
+      <span class="status-item">{{activeSiteName}}</span>
+      <button type="button" class="status-env {{envClass}}" onClick="{{toggleEnv}}">{{envLabel}}</button>
+    </div>
+    <div class="status-right">
+      <span class="status-item">Content Admin API v1</span>
+      <span class="status-item status-dot-wrap"><span class="status-dot"></span>Connected</span>
+      <sc-if value="{{hasUnsaved}}" hint-placeholder-val="{{false}}">
+        <span class="status-item">{{unsavedCount}} unsaved</span>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{connectOpen}}" hint-placeholder-val="{{false}}">
+    <div class="modal-backdrop" onClick="{{closeConnect}}">
+      <div class="modal" onClick="{{stopProp}}">
+        <div class="modal-header">
+          <span class="modal-title">Connect New Site</span>
+          <button type="button" class="modal-close" onClick="{{closeConnect}}">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="modal-sub">Any backend that implements the Content Admin API contract can be managed from this panel &mdash; no per-site custom UI needed.</div>
+        <label class="modal-label">Site name</label>
+        <input class="input" type="text" placeholder="e.g. Marketing Site" value="{{connectName}}" onInput="{{onConnectNameInput}}" />
+        <label class="modal-label">API endpoint</label>
+        <input class="input mono" type="text" placeholder="https://example.com/api/admin" value="{{connectEndpoint}}" onInput="{{onConnectEndpointInput}}" />
+        <label class="modal-label">API key</label>
+        <input class="input mono" type="password" placeholder="sk_live_..." value="{{connectKey}}" onInput="{{onConnectKeyInput}}" />
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onClick="{{closeConnect}}">Cancel</button>
+          <button type="button" class="btn-primary {{connectEnabledClass}}" onClick="{{submitConnect}}">Connect</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{paletteOpen}}" hint-placeholder-val="{{false}}">
+    <div class="palette-backdrop" onClick="{{togglePaletteOff}}">
+      <div class="palette" onClick="{{stopProp}}">
+        <div class="palette-search">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M10.3 10.3L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input class="palette-input" type="text" placeholder="Type a command..." value="{{paletteQuery}}" onInput="{{onPaletteQueryInput}}" autofocus />
+        </div>
+        <div class="palette-list">
+          <sc-for list="{{filteredCommands}}" as="cmd" hint-placeholder-count="4">
+            <div class="palette-item" onClick="{{cmd.onClick}}">{{cmd.label}}</div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+    <div class="toast">{{toastMsg}}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script>
+const POST_SCHEMA = [
+  { key: 'title', label: 'Title', type: 'text' },
+  { key: 'slug', label: 'Slug', type: 'text' },
+  { key: 'status', label: 'Status', type: 'enum', options: ['draft', 'scheduled', 'published'] },
+  { key: 'excerpt', label: 'Excerpt', type: 'textarea' },
+  { key: 'tags', label: 'Tags', type: 'tags' },
+  { key: 'featured', label: 'Featured', type: 'boolean' },
+];
+const PAGE_SCHEMA = [
+  { key: 'title', label: 'Title', type: 'text' },
+  { key: 'slug', label: 'Slug', type: 'text' },
+  { key: 'status', label: 'Status', type: 'enum', options: ['draft', 'published'] },
+  { key: 'body', label: 'Body', type: 'textarea' },
+];
+const AUTHOR_SCHEMA = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'email', label: 'Email', type: 'text' },
+  { key: 'bio', label: 'Bio', type: 'textarea' },
+  { key: 'active', label: 'Active', type: 'boolean' },
+];
+const PRODUCT_SCHEMA = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'sku', label: 'SKU', type: 'text' },
+  { key: 'price', label: 'Price (USD)', type: 'text' },
+  { key: 'status', label: 'Status', type: 'enum', options: ['draft', 'active', 'archived'] },
+  { key: 'tags', label: 'Tags', type: 'tags' },
+  { key: 'inStock', label: 'In Stock', type: 'boolean' },
+];
+const CATEGORY_SCHEMA = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'slug', label: 'Slug', type: 'text' },
+  { key: 'description', label: 'Description', type: 'textarea' },
+];
+
+const SITES_INITIAL = [
+  {
+    id: 'northwind', name: 'Northwind Blog', initials: 'NB', color: '#3fa7ff',
+    endpoint: 'https://northwind-blog.example.com/api/admin',
+    collections: [
+      { id: 'nw-posts', name: 'Posts', table: 'posts', schema: POST_SCHEMA, records: [
+        { id: 'p1', values: { title: 'Launching Our New Storefront', slug: 'launching-our-new-storefront', status: 'published', excerpt: 'A quick look at what changed in the redesign.', tags: ['product', 'launch'], featured: true } },
+        { id: 'p2', values: { title: 'Five Tips for Faster Onboarding', slug: 'five-tips-onboarding', status: 'draft', excerpt: '', tags: ['tips'], featured: false } },
+        { id: 'p3', values: { title: 'Q3 Roadmap Recap', slug: 'q3-roadmap-recap', status: 'scheduled', excerpt: 'What shipped and what is next.', tags: ['roadmap', 'product'], featured: false } },
+      ]},
+      { id: 'nw-pages', name: 'Pages', table: 'pages', schema: PAGE_SCHEMA, records: [
+        { id: 'pg1', values: { title: 'About Us', slug: 'about', status: 'published', body: 'We build tools for small teams.' } },
+        { id: 'pg2', values: { title: 'Contact', slug: 'contact', status: 'published', body: 'Reach us at hello@northwind.example.' } },
+      ]},
+      { id: 'nw-authors', name: 'Authors', table: 'authors', schema: AUTHOR_SCHEMA, records: [
+        { id: 'a1', values: { name: 'Priya Shah', email: 'priya@northwind.example', bio: 'Editor and occasional writer.', active: true } },
+        { id: 'a2', values: { name: 'Devon Ruiz', email: 'devon@northwind.example', bio: 'Product marketing.', active: false } },
+      ]},
+    ],
+  },
+  {
+    id: 'acme', name: 'Acme Shop', initials: 'AS', color: '#c77dff',
+    endpoint: 'https://admin.acmeshop.example/api',
+    collections: [
+      { id: 'ac-products', name: 'Products', table: 'products', schema: PRODUCT_SCHEMA, records: [
+        { id: 'pr1', values: { name: 'Trail Runner Jacket', sku: 'TRJ-001', price: '128.00', status: 'active', tags: ['outdoor', 'jackets'], inStock: true } },
+        { id: 'pr2', values: { name: 'Insulated Water Bottle', sku: 'IWB-014', price: '24.00', status: 'active', tags: ['accessories'], inStock: true } },
+        { id: 'pr3', values: { name: 'Retired Trail Map (2023)', sku: 'RTM-023', price: '12.00', status: 'archived', tags: [], inStock: false } },
+      ]},
+      { id: 'ac-categories', name: 'Categories', table: 'categories', schema: CATEGORY_SCHEMA, records: [
+        { id: 'c1', values: { name: 'Outdoor', slug: 'outdoor', description: 'Jackets, boots, and trail gear.' } },
+        { id: 'c2', values: { name: 'Accessories', slug: 'accessories', description: 'Small goods and add-ons.' } },
+      ]},
+    ],
+  },
+];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sites: SITES_INITIAL,
+      activeSiteId: 'northwind',
+      expanded: { 'nw-posts': true, 'nw-pages': false, 'nw-authors': false, 'ac-products': true, 'ac-categories': false },
+      tabs: [{ key: 'northwind:nw-posts:p1', type: 'record', siteId: 'northwind', collectionId: 'nw-posts', recordId: 'p1', dirty: false }],
+      activeTabKey: 'northwind:nw-posts:p1',
+      paletteOpen: false,
+      paletteQuery: '',
+      connectOpen: false,
+      connectName: '',
+      connectEndpoint: '',
+      connectKey: '',
+      toast: null,
+      env: 'Production',
+    };
+    this._toastTimer = null;
+  }
+
+  componentDidMount() {
+    this._keyHandler = (e) => {
+      const k = (e.key || '').toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && k === 'k') {
+        e.preventDefault();
+        this.togglePalette();
+      } else if (e.key === 'Escape') {
+        if (this.state.paletteOpen) this.togglePalette(false);
+        if (this.state.connectOpen) this.setState({ connectOpen: false });
+      }
+    };
+    window.addEventListener('keydown', this._keyHandler);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this._keyHandler);
+    clearTimeout(this._toastTimer);
+  }
+
+  findSite = (id) => this.state.sites.find((s) => s.id === id);
+  activeTab = () => this.state.tabs.find((t) => t.key === this.state.activeTabKey);
+  getRecord = (tab) => {
+    const site = this.findSite(tab.siteId);
+    const col = site.collections.find((c) => c.id === tab.collectionId);
+    return col.records.find((r) => r.id === tab.recordId);
+  };
+
+  selectSite = (id) => { this.setState({ activeSiteId: id }); };
+
+  toggleCollection = (id) => {
+    this.setState({ expanded: { ...this.state.expanded, [id]: !this.state.expanded[id] } });
+  };
+
+  openRecord = (siteId, collectionId, recordId) => {
+    const key = `${siteId}:${collectionId}:${recordId}`;
+    let tabs = this.state.tabs;
+    if (!tabs.find((t) => t.key === key)) {
+      tabs = [...tabs, { key, type: 'record', siteId, collectionId, recordId, dirty: false }];
+    }
+    this.setState({ tabs, activeTabKey: key, activeSiteId: siteId });
+  };
+
+  openConsole = (siteId) => {
+    const key = `console:${siteId}`;
+    let tabs = this.state.tabs;
+    if (!tabs.find((t) => t.key === key)) {
+      const site = this.findSite(siteId);
+      const defaultTable = site.collections.length ? site.collections[0].table : 'table';
+      tabs = [...tabs, { key, type: 'console', siteId, query: `SELECT * FROM ${defaultTable} LIMIT 50;`, results: null, running: false }];
+    }
+    this.setState({ tabs, activeTabKey: key, activeSiteId: siteId });
+  };
+
+  openConsoleForActive = () => { this.openConsole(this.state.activeSiteId); };
+
+  runQueryForTab = (tabKey, queryOverride) => {
+    const tab = this.state.tabs.find((t) => t.key === tabKey);
+    if (!tab || tab.type !== 'console') return;
+    const query = queryOverride != null ? queryOverride : tab.query;
+    const site = this.findSite(tab.siteId);
+    this.setState({ tabs: this.state.tabs.map((t) => (t.key === tabKey ? { ...t, query, running: true } : t)) });
+    setTimeout(() => {
+      const result = this.executeMockQuery(site, query);
+      this.setState({ tabs: this.state.tabs.map((t) => (t.key === tabKey ? { ...t, running: false, results: result } : t)) });
+    }, 280 + Math.random() * 260);
+  };
+
+  runConsole = () => { this.runQueryForTab(this.state.activeTabKey); };
+  onConsoleQueryInput = (e) => {
+    const key = this.state.activeTabKey;
+    const value = e.target.value;
+    this.setState({ tabs: this.state.tabs.map((t) => (t.key === key ? { ...t, query: value } : t)) });
+  };
+  onConsoleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      this.runConsole();
+    }
+  };
+
+  executeMockQuery = (site, queryText) => {
+    const trimmed = queryText.trim().replace(/;+\s*$/, '');
+    const lower = trimmed.toLowerCase();
+    if (lower === 'show tables' || lower === 'select table_name from information_schema.tables') {
+      return {
+        columns: ['table_name', 'rows'],
+        rows: site.collections.map((c) => [c.table, String(c.records.length)]),
+        rowCount: site.collections.length,
+        elapsedMs: Math.round(6 + Math.random() * 14),
+        error: null,
+      };
+    }
+    const m = lower.match(/from\s+([a-z0-9_]+)/i);
+    if (!m) {
+      const example = site.collections[0] ? site.collections[0].table : 'table';
+      return { columns: [], rows: [], rowCount: 0, elapsedMs: 3, error: `Could not find a table in that query. Try: SELECT * FROM ${example};` };
+    }
+    const tableName = m[1];
+    const col = site.collections.find((c) => c.table === tableName);
+    if (!col) {
+      const available = site.collections.map((c) => c.table).join(', ');
+      return { columns: [], rows: [], rowCount: 0, elapsedMs: 3, error: `Unknown table "${tableName}". Available tables on ${site.name}: ${available}.` };
+    }
+    let limit = null;
+    const lm = lower.match(/limit\s+(\d+)/);
+    if (lm) limit = parseInt(lm[1], 10);
+    const columns = ['id', ...col.schema.map((f) => f.key)];
+    let rows = col.records.map((r) => [
+      r.id,
+      ...col.schema.map((f) => {
+        const v = r.values[f.key];
+        if (Array.isArray(v)) return v.join(', ');
+        if (typeof v === 'boolean') return v ? 'true' : 'false';
+        return v == null || v === '' ? '·' : String(v);
+      }),
+    ]);
+    if (limit != null) rows = rows.slice(0, limit);
+    return { columns, rows, rowCount: rows.length, elapsedMs: Math.round(8 + Math.random() * 40), error: null };
+  };
+
+  closeTab = (key, e) => {
+    if (e) e.stopPropagation();
+    const tabs = this.state.tabs.filter((t) => t.key !== key);
+    let activeTabKey = this.state.activeTabKey;
+    if (activeTabKey === key) {
+      activeTabKey = tabs.length ? tabs[tabs.length - 1].key : null;
+    }
+    this.setState({ tabs, activeTabKey });
+  };
+
+  updateField = (fieldKey, value) => {
+    const tab = this.activeTab();
+    if (!tab) return;
+    const sites = this.state.sites.map((s) => {
+      if (s.id !== tab.siteId) return s;
+      return {
+        ...s,
+        collections: s.collections.map((c) => {
+          if (c.id !== tab.collectionId) return c;
+          return {
+            ...c,
+            records: c.records.map((r) => {
+              if (r.id !== tab.recordId) return r;
+              return { ...r, values: { ...r.values, [fieldKey]: value } };
+            }),
+          };
+        }),
+      };
+    });
+    const tabs = this.state.tabs.map((t) => (t.key === tab.key ? { ...t, dirty: true } : t));
+    this.setState({ sites, tabs });
+  };
+
+  addTag = (fieldKey, draft) => {
+    const val = (draft || '').trim();
+    if (!val) return;
+    const tab = this.activeTab();
+    if (!tab) return;
+    const record = this.getRecord(tab);
+    const current = record.values[fieldKey] || [];
+    this.updateField(fieldKey, [...current, val]);
+    this.setState({ [`tagDraft_${fieldKey}`]: '' });
+  };
+
+  removeTag = (fieldKey, index) => {
+    const tab = this.activeTab();
+    if (!tab) return;
+    const record = this.getRecord(tab);
+    const current = record.values[fieldKey] || [];
+    this.updateField(fieldKey, current.filter((_, i) => i !== index));
+  };
+
+  saveActive = () => {
+    const tab = this.activeTab();
+    if (!tab) return;
+    const tabs = this.state.tabs.map((t) => (t.key === tab.key ? { ...t, dirty: false } : t));
+    const site = this.findSite(tab.siteId);
+    clearTimeout(this._toastTimer);
+    this.setState({ tabs, toast: `Saved to ${site.name} via Content Admin API` });
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 2400);
+  };
+
+  togglePalette = (force) => {
+    const next = typeof force === 'boolean' ? force : !this.state.paletteOpen;
+    this.setState({ paletteOpen: next, paletteQuery: '' });
+  };
+
+  openPalette = () => { this.togglePalette(true); };
+  onPaletteQueryInput = (e) => { this.setState({ paletteQuery: e.target.value }); };
+
+  openConnect = () => { this.setState({ connectOpen: true, connectName: '', connectEndpoint: '', connectKey: '' }); };
+  closeConnect = () => { this.setState({ connectOpen: false }); };
+  onConnectNameInput = (e) => { this.setState({ connectName: e.target.value }); };
+  onConnectEndpointInput = (e) => { this.setState({ connectEndpoint: e.target.value }); };
+  onConnectKeyInput = (e) => { this.setState({ connectKey: e.target.value }); };
+
+  submitConnect = () => {
+    const name = this.state.connectName.trim();
+    const endpoint = this.state.connectEndpoint.trim();
+    if (!name || !endpoint) return;
+    const id = 'site-' + Date.now();
+    const initials = name.slice(0, 2).toUpperCase();
+    const palette = ['#4cd490', '#ffb454', '#ff7b9c', '#7d9dff', '#67d4d4'];
+    const color = palette[this.state.sites.length % palette.length];
+    const collId = id + '-content';
+    const newSite = {
+      id, name, initials, color, endpoint,
+      collections: [
+        { id: collId, name: 'Content', table: 'content', schema: PAGE_SCHEMA, records: [
+          { id: id + '-r1', values: { title: 'Welcome', slug: 'welcome', status: 'draft', body: '' } },
+        ]},
+      ],
+    };
+    clearTimeout(this._toastTimer);
+    this.setState({
+      sites: [...this.state.sites, newSite],
+      activeSiteId: id,
+      expanded: { ...this.state.expanded, [collId]: true },
+      connectOpen: false,
+      toast: `Connected ${name} via Content Admin API`,
+    });
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 2600);
+  };
+
+  toggleEnv = () => { this.setState({ env: this.state.env === 'Production' ? 'Staging' : 'Production' }); };
+  stopProp = (e) => { e.stopPropagation(); };
+
+  renderVals() {
+    const st = this.state;
+    const activeSite = this.findSite(st.activeSiteId) || st.sites[0];
+    const activeTabObj = this.activeTab();
+
+    const activityItems = st.sites.map((s) => ({
+      id: s.id, name: s.name, initials: s.initials, color: s.color,
+      activeClass: s.id === st.activeSiteId ? 'active' : '',
+      onClick: () => this.selectSite(s.id),
+    }));
+
+    const sidebarCollections = activeSite.collections.map((c) => {
+      const expanded = !!st.expanded[c.id];
+      const records = c.records.map((r) => {
+        const key = `${activeSite.id}:${c.id}:${r.id}`;
+        const displayTitle = r.values.title || r.values.name || 'Untitled';
+        return {
+          id: r.id, displayTitle,
+          activeClass: key === st.activeTabKey ? 'active' : '',
+          onClick: () => this.openRecord(activeSite.id, c.id, r.id),
+        };
+      });
+      return {
+        id: c.id, name: c.name, count: String(c.records.length),
+        expanded, chevronClass: expanded ? 'open' : '',
+        onToggle: () => this.toggleCollection(c.id),
+        records,
+      };
+    });
+
+    const tabs = st.tabs.map((t) => {
+      const site = this.findSite(t.siteId);
+      const isConsole = t.type === 'console';
+      let displayTitle;
+      if (isConsole) {
+        displayTitle = `SQL · ${site.name}`;
+      } else {
+        const col = site.collections.find((c) => c.id === t.collectionId);
+        const rec = col.records.find((r) => r.id === t.recordId);
+        displayTitle = rec.values.title || rec.values.name || 'Untitled';
+      }
+      return {
+        key: t.key, displayTitle, dirty: isConsole ? false : t.dirty,
+        isConsole, isRecord: !isConsole,
+        activeClass: t.key === st.activeTabKey ? 'active' : '',
+        onClick: () => this.setState({ activeTabKey: t.key, activeSiteId: t.siteId }),
+        onClose: (e) => this.closeTab(t.key, e),
+      };
+    });
+
+    let activeFields = [];
+    let breadcrumb = '';
+    let activeKind = 'none';
+    let saveEnabledClass = '';
+    let consoleQuery = '';
+    let consoleRunning = false;
+    let consoleResults = null;
+    let consoleTables = [];
+    if (activeTabObj) {
+      const site = this.findSite(activeTabObj.siteId);
+      if (activeTabObj.type === 'console') {
+        activeKind = 'console';
+        breadcrumb = `${site.name}  ›  SQL Console`;
+        consoleQuery = activeTabObj.query;
+        consoleRunning = activeTabObj.running;
+        consoleResults = activeTabObj.results;
+        consoleTables = site.collections.map((c) => ({
+          name: c.table,
+          count: String(c.records.length),
+          onClick: () => this.runQueryForTab(activeTabObj.key, `SELECT * FROM ${c.table} LIMIT 50;`),
+        }));
+      } else {
+        activeKind = 'record';
+        const col = site.collections.find((c) => c.id === activeTabObj.collectionId);
+        const rec = col.records.find((r) => r.id === activeTabObj.recordId);
+        const displayTitle = rec.values.title || rec.values.name || 'Untitled';
+        breadcrumb = `${site.name}  ›  ${col.name}  ›  ${displayTitle}`;
+        saveEnabledClass = activeTabObj.dirty ? 'enabled' : '';
+        activeFields = col.schema.map((f) => {
+          const value = rec.values[f.key];
+          const base = {
+            key: f.key, label: f.label, value,
+            isText: f.type === 'text', isTextarea: f.type === 'textarea',
+            isBoolean: f.type === 'boolean', isEnum: f.type === 'enum', isTags: f.type === 'tags',
+          };
+          if (f.type === 'boolean') {
+            base.toggleClass = value ? 'on' : 'off';
+            base.onToggle = () => this.updateField(f.key, !value);
+          } else if (f.type === 'enum') {
+            base.options = f.options.map((o) => ({ value: o, label: o }));
+            base.onSelect = (e) => this.updateField(f.key, e.target.value);
+          } else if (f.type === 'tags') {
+            base.tagList = (value || []).map((tag, i) => ({ value: tag, onRemove: () => this.removeTag(f.key, i) }));
+            base.tagDraft = st[`tagDraft_${f.key}`] || '';
+            base.onTagDraftInput = (e) => this.setState({ [`tagDraft_${f.key}`]: e.target.value });
+            base.onAddTagKeyDown = (e) => {
+              if (e.key === 'Enter') { e.preventDefault(); this.addTag(f.key, e.target.value); }
+            };
+          } else {
+            base.onInput = (e) => this.updateField(f.key, e.target.value);
+          }
+          return base;
+        });
+      }
+    }
+
+    const showRecordForm = activeKind === 'record';
+    const showConsole = activeKind === 'console';
+    const noActiveTab = activeKind === 'none';
+    const consoleHasError = !!(consoleResults && consoleResults.error);
+    const consoleHasRows = !!(consoleResults && !consoleResults.error && consoleResults.rowCount > 0);
+    const consoleEmptyResult = !!(consoleResults && !consoleResults.error && consoleResults.rowCount === 0);
+    const consoleNoResultsYet = !consoleResults && !consoleRunning;
+    const consoleColumns = consoleResults && !consoleResults.error ? consoleResults.columns : [];
+    const consoleRows = consoleResults && !consoleResults.error ? consoleResults.rows : [];
+    const consoleRowCount = consoleResults ? String(consoleResults.rowCount) : '0';
+    const consoleElapsed = consoleResults ? String(consoleResults.elapsedMs) : '0';
+    const consoleErrorMsg = consoleResults && consoleResults.error ? consoleResults.error : '';
+
+    const unsavedCount = st.tabs.filter((t) => t.dirty).length;
+
+    const baseCommands = [
+      { label: 'File: Save Record', run: () => this.saveActive() },
+      { label: 'View: Close Editor', run: () => activeTabObj && this.closeTab(activeTabObj.key) },
+      { label: 'View: Close All Editors', run: () => this.setState({ tabs: [], activeTabKey: null }) },
+      { label: 'Site: Connect New Site…', run: () => this.openConnect() },
+      { label: `Site: Toggle Environment (currently ${st.env})`, run: () => this.toggleEnv() },
+      ...st.sites.map((s) => ({ label: `Site: Switch to ${s.name}`, run: () => this.selectSite(s.id) })),
+      ...st.sites.map((s) => ({ label: `SQL: Open Query Console — ${s.name}`, run: () => this.openConsole(s.id) })),
+    ];
+    const q = st.paletteQuery.toLowerCase();
+    const filteredCommands = baseCommands
+      .filter((c) => c.label.toLowerCase().includes(q))
+      .map((c, i) => ({ id: 'cmd-' + i, label: c.label, onClick: () => { c.run(); this.togglePalette(false); } }));
+
+    const connectEnabled = st.connectName.trim() && st.connectEndpoint.trim();
+
+    return {
+      activityItems,
+      sidebarCollections,
+      activeSiteName: activeSite.name,
+      activeSiteEndpoint: activeSite.endpoint,
+      tabs,
+      showRecordForm,
+      showConsole,
+      noActiveTab,
+      activeFields,
+      breadcrumb,
+      saveEnabledClass,
+      saveActive: this.saveActive,
+      openConsoleForActive: this.openConsoleForActive,
+      runConsole: this.runConsole,
+      consoleQuery,
+      consoleRunning,
+      consoleTables,
+      onConsoleQueryInput: this.onConsoleQueryInput,
+      onConsoleKeyDown: this.onConsoleKeyDown,
+      consoleHasError,
+      consoleHasRows,
+      consoleEmptyResult,
+      consoleNoResultsYet,
+      consoleColumns,
+      consoleRows,
+      consoleRowCount,
+      consoleElapsed,
+      consoleErrorMsg,
+      openPalette: this.openPalette,
+      togglePaletteOff: () => this.togglePalette(false),
+      paletteOpen: st.paletteOpen,
+      paletteQuery: st.paletteQuery,
+      onPaletteQueryInput: this.onPaletteQueryInput,
+      filteredCommands,
+      connectOpen: st.connectOpen,
+      connectName: st.connectName,
+      connectEndpoint: st.connectEndpoint,
+      connectKey: st.connectKey,
+      onConnectNameInput: this.onConnectNameInput,
+      onConnectEndpointInput: this.onConnectEndpointInput,
+      onConnectKeyInput: this.onConnectKeyInput,
+      connectEnabledClass: connectEnabled ? 'enabled' : '',
+      submitConnect: this.submitConnect,
+      closeConnect: this.closeConnect,
+      openConnect: this.openConnect,
+      stopProp: this.stopProp,
+      hasToast: !!st.toast,
+      toastMsg: st.toast || '',
+      envLabel: st.env,
+      envClass: st.env === 'Production' ? 'prod' : 'staging',
+      toggleEnv: this.toggleEnv,
+      hasUnsaved: unsavedCount > 0,
+      unsavedCount: String(unsavedCount),
+    };
+  }
+}
+</script>
+</body>
+</html>
