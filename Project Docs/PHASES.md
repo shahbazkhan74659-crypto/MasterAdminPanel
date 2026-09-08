@@ -71,12 +71,12 @@ To be defined in further detail as the owner directs. Implied by the phase name:
 #### Completion Criteria
 All three local target-database engines (Postgres, MySQL, SQLite) are running/available and reachable, each with a dedicated database/credentials for this project's development use, confirmed via a real connection to each (e.g. `psql`, a MySQL client, and opening the SQLite file) — no application code needs to exist yet for this phase to be complete.
 
-**Status: Not started.**
+**Status: Complete (2026-09-08).** Postgres 18 and MySQL 8.0 were already installed and running as native Windows services (`postgresql-x64-18`, `MySQL80`) — no new installs needed. Provisioned isolated, dedicated dev credentials for each engine, distinct from Phase 1a's `adminpanel_app`: Postgres role/database `adminpanel_target_pg`; MySQL user/database `adminpanel_target_mysql`; a real SQLite file at `local-data/adminpanel_target.sqlite` (new gitignored `local-data/` folder). Each engine verified with a full read/write round-trip (`CREATE TABLE` → `INSERT` → `SELECT` → `DROP TABLE`), not just a bare connection check. Connection details recorded in the same local, gitignored `.env.local` as Phase 1a, under a `TARGET_*` prefix to keep them distinct (interim placement only — real secrets storage is still Phase 10's job).
 
 ### Completion Criteria
 Both Phase 1a and Phase 1b are complete — see each sub-phase's own completion criteria above.
 
-**Phase 1 overall status: Not started.**
+**Phase 1 overall status: Complete (2026-09-08).**
 
 ## Phase 2 — Backend Server (Node.js)
 
