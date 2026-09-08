@@ -6,33 +6,34 @@ This describes the **actual current implementation** — a design/prototype laye
 
 **Implemented:** The repository contains no production application code. It holds a published Claude Design canvas, `design/master-admin-panel.html` (a self-contained HTML artifact — an early preview of the Claude Design canvas editor, packaged to run as a published artifact page), plus its editable source files `design/Main.dc.html` (the single artboard's content) and `design/canvas.json` (canvas layout). This is the interactive visual prototype referenced as "Prototype" in the design record (see `DECISIONS.md`) — a mock frontend demonstrating the intended VS Code-styled UI, with no real API calls, no real database connection, and no backend behind it. An empty `Prototype/` folder exists at the repo root with no content.
 
-**Planned:** An Electron desktop application (Windows-first) with a React + TypeScript renderer (built via Vite), styled and structured after the VS Code interface, communicating with two distinct backends: (1) arbitrary remote sites over HTTPS via the Content Admin API protocol, and (2) local/remote databases via direct native drivers running in Electron's main process. No planned-architecture code has been written yet.
+**Planned:** A browser-based web app (**superseding an earlier Electron desktop-app plan**, reversed 2026-09-08 — see `DECISIONS.md`): a React + TypeScript frontend (built via Vite), styled and structured after the VS Code interface, served by a Node.js backend server, gated behind a single-user login. The frontend talks to two distinct backends: (1) arbitrary remote sites over HTTPS via the Content Admin API protocol (client-side `fetch`, unchanged from the original plan), and (2) this panel's own backend server, which holds the native DB drivers and brokers the SQL console's direct database connections (replacing Electron's main-process/IPC arrangement). Deployment target: Render's free tier + an UptimeRobot keep-alive monitor, the same pattern as the Portfolio project. No planned-architecture code has been written yet.
 
 ## Technology Stack
 
 **Implemented:** None (design-only artifact, see above).
 
-**Planned** (locked, see `DECISIONS.md`):
+**Planned** (see `DECISIONS.md` — Electron-specific rows below are superseded; carried-over and new rows reflect the 2026-09-08 browser-based pivot):
 
 | Layer | Choice | Why |
 |---|---|---|
-| Shell | Electron | Same foundation as real VS Code; Node.js main process gets direct DB-driver access with no sidecar process. |
-| UI | React + TypeScript, built with Vite | Matches the component/state model already proven in the prototype; fast dev loop. |
-| Code/SQL editing | Monaco (the actual VS Code editor component) | Real syntax highlighting for the SQL console and any raw JSON/code fields. |
-| State management | Zustand | Lightweight global store for open tabs, active site, connections. |
-| DB access (SQL console) | Node drivers per engine (`pg`, `mysql2`, `better-sqlite3`) in the Electron main process, exposed to the renderer via `contextBridge`/IPC | Implements the "connect directly to the DB" decision (see `DECISIONS.md`). |
-| Content Admin API client | Plain `fetch` from the renderer | Outbound HTTPS only, to sites the user controls. |
-| Secrets (API keys, DB credentials) | Electron's built-in `safeStorage` | OS-backed encryption, no extra native dependency. |
-| Local app state (layout, recent sites, open tabs) | `electron-store` | Simple JSON persistence for non-secret settings only. |
-| Packaging | `electron-builder` | Windows installer for the primary dev machine. |
+| Frontend | React + TypeScript, built with Vite | Matches the component/state model already proven in the prototype; fast dev loop. Unchanged by the browser-based pivot. |
+| Backend server | Node.js (specific framework — e.g. Express/Fastify — not yet chosen) | Needed so the browser can reach native DB drivers indirectly; replaces Electron's main process. See Open decisions in `DECISIONS.md`. |
+| Code/SQL editing | Monaco (the actual VS Code editor component) | Real syntax highlighting for the SQL console and any raw JSON/code fields. Monaco is web-native, so this is unaffected by the pivot. |
+| State management | Zustand | Lightweight global store for open tabs, active site, connections. Unchanged. |
+| DB access (SQL console) | Node drivers per engine (`pg`, `mysql2`, `better-sqlite3`), now running in the backend server and exposed to the frontend via an authenticated HTTP/WebSocket API instead of Electron's `contextBridge`/IPC | Implements the "connect directly to the DB" decision (see `DECISIONS.md`), relocated from an Electron main process to a standalone backend server. |
+| Content Admin API client | Plain `fetch` from the frontend | Outbound HTTPS only, to sites the user controls. Unchanged. |
+| Auth | Single-user login (mechanics — session vs. token, credential storage — not yet decided) | The browser-based site is reachable by anyone with the URL, unlike a desktop app installed only on the owner's machine — see `DECISIONS.md`. |
+| Secrets (API keys, DB credentials) | Not yet decided — `safeStorage` no longer applies (Electron-only) | Needs a server-side mechanism (env vars, encrypted store, secrets manager) — see Open decisions in `DECISIONS.md`. |
+| Local/app state (layout, recent sites, open tabs) | Not yet decided — `electron-store` no longer applies (Electron-only) | Likely browser storage and/or server-persisted settings; not yet chosen. |
+| Hosting / deployment | Render free tier + UptimeRobot | Owner's explicit choice, reusing the exact pattern the Portfolio project already runs on. Replaces `electron-builder`/desktop packaging entirely. |
 
-Tauri was evaluated and rejected — see `DECISIONS.md`.
+The Electron-vs-Tauri shell decision (and the Tauri rejection reasoning) is now moot given the browser-based pivot — see `DECISIONS.md` for the full history.
 
 ## Application Structure
 
 **Implemented:** No application structure exists yet — only the design canvas artifact described above.
 
-**Planned:** Not yet broken down into concrete modules/files — depends on Phase 1+ work, which is not yet defined (see `PHASES.md`). The product design (see `PROJECT.md`) implies at least: a renderer UI layer (activity bar / explorer / tabs / editor pane / command palette / status bar), a Content Admin API client module, and a main-process DB-connection module per supported engine — but no file/module layout has been decided.
+**Planned:** Not yet broken down into concrete modules/files — depends on Phase 1+ work, which is not yet defined (see `PHASES.md`). The product design (see `PROJECT.md`) implies at least: a frontend UI layer (activity bar / explorer / tabs / editor pane / command palette / status bar), a Content Admin API client module, a login/auth flow, and a backend-server DB-connection module per supported engine — but no file/module layout has been decided.
 
 ## Component Structure
 
@@ -45,8 +46,10 @@ Tauri was evaluated and rejected — see `DECISIONS.md`.
 **Implemented:** None — no real data flow exists; the prototype has no data fetching or persistence.
 
 **Planned:** Two independent flows, per `PROJECT.md`'s Content Admin API protocol vs. SQL console distinction:
-1. **Content Admin API path**: renderer → `fetch()` over HTTPS → a remote site's Content Admin API → schema + records returned → panel renders the appropriate editor for each field type (text, rich text, image picker, relation dropdown, date, boolean, array, etc.) based on the schema the API itself describes.
-2. **SQL console path**: renderer → IPC → Electron main process → native DB driver (`pg`/`mysql2`/`better-sqlite3`) → direct connection to the target database, bypassing the Content Admin API and any schema validation it would otherwise enforce. This is a deliberate exception, acceptable specifically because this is a personal, single-operator tool (see `DECISIONS.md`).
+1. **Content Admin API path**: frontend → `fetch()` over HTTPS → a remote site's Content Admin API → schema + records returned → panel renders the appropriate editor for each field type (text, rich text, image picker, relation dropdown, date, boolean, array, etc.) based on the schema the API itself describes.
+2. **SQL console path**: frontend → authenticated HTTP/WebSocket request → this panel's own backend server → native DB driver (`pg`/`mysql2`/`better-sqlite3`) → direct connection to the target database, bypassing the Content Admin API and any schema validation it would otherwise enforce. Relocated from Electron's IPC/main-process arrangement to a standalone backend server as part of the 2026-09-08 browser-based pivot (see `DECISIONS.md`) — still a deliberate exception, acceptable specifically because this is a personal, single-operator tool.
+
+A third flow now exists that didn't under the desktop-app plan: **login** — the browser client must authenticate against the backend server before reaching either flow above (see `DECISIONS.md`'s "Single-user login" decision). Mechanics not yet decided.
 
 Not yet decided: whether the SQL console defaults to read-only with an explicit confirm step before non-`SELECT` statements (see `DECISIONS.md`, `TASKS.md`).
 
@@ -54,13 +57,13 @@ Not yet decided: whether the SQL console defaults to read-only with an explicit 
 
 **Implemented:** None.
 
-**Planned:** Zustand for renderer-side global state — open tabs, active site/workspace, connection status. `electron-store` for persisted local app settings (layout, recent sites, open tabs) that are not secrets. Secrets (API keys, DB credentials) are planned to be stored separately via Electron's `safeStorage`, kept as two distinct secret categories (API keys vs. DB credentials) rather than conflated (see `DECISIONS.md`).
+**Planned:** Zustand for frontend global state — open tabs, active site/workspace, connection status. Persisted local app settings (layout, recent sites, open tabs) need a new mechanism now that `electron-store` no longer applies — not yet decided (browser storage vs. server-persisted, per Open decisions in `DECISIONS.md`). Secrets (API keys, DB credentials) also need a new server-side storage mechanism now that Electron's `safeStorage` no longer applies — not yet decided, but the "keep as two distinct secret categories" principle (API keys vs. DB credentials) still stands regardless of mechanism.
 
 ## Routing
 
 **Implemented:** None — the prototype is a single static canvas, not a routed application.
 
-**Planned:** Not yet decided — likely tab/panel-based navigation (VS Code-style, no URL-based routing) given the desktop-app shell, but no decision has been recorded.
+**Planned:** Not yet decided — likely still tab/panel-based navigation (VS Code-style, no URL-based routing) within the app shell, plus a real route/redirect for the login gate itself now that the app is browser-based. No decision has been recorded.
 
 ## API Architecture
 
@@ -74,4 +77,4 @@ Two tiers of API implementer are anticipated: (1) sites the owner builds, implem
 
 **Implemented:** None.
 
-**Planned:** No persistence layer of its own beyond local app settings (`electron-store`) and OS-encrypted secrets (`safeStorage`). The panel does not own a database — it either (a) reads/writes remote sites' content through their own Content Admin API implementations, or (b) connects directly to a target database via native drivers for the SQL console. Per-site DB credentials and per-site API keys/tokens are planned as two separate secret categories.
+**Planned:** The panel does not own a content database — it either (a) reads/writes remote sites' content through their own Content Admin API implementations, or (b) connects directly to a target database via native drivers for the SQL console. It does now need some persistence of its own that didn't exist under the desktop-app plan: at minimum, the single login account's credentials, plus wherever per-site DB credentials/API keys end up being stored server-side. None of this storage layer is decided yet (see Open decisions in `DECISIONS.md`). Render's free tier has no persistent disk (the same constraint the Portfolio project hit for media storage) — relevant if this panel's own data ends up needing file storage rather than just a small database.

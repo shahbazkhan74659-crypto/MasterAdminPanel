@@ -19,10 +19,10 @@ Define the product concept, UI/interaction model, core protocol architecture, an
 **Status: Complete**, as evidenced by the locked design record in `DECISIONS.md` (originally `docs/DESIGN.md`, migrated).
 
 **0b. Technology Stack Decision**
-- Stack chosen: Electron + React/TypeScript (Vite) + Monaco + Zustand + native per-engine DB drivers (`pg`/`mysql2`/`better-sqlite3`) + Electron `safeStorage` + `electron-store` + `electron-builder` (see `DECISIONS.md`).
-- Tauri evaluated and explicitly rejected (see `DECISIONS.md`).
+- Stack originally chosen: Electron + React/TypeScript (Vite) + Monaco + Zustand + native per-engine DB drivers (`pg`/`mysql2`/`better-sqlite3`) + Electron `safeStorage` + `electron-store` + `electron-builder` (see `DECISIONS.md`). Tauri evaluated and explicitly rejected.
+- **Revised 2026-09-08**: owner decided to run the panel as a browser-based web app instead of an Electron desktop app — Electron/Tauri, `safeStorage`, `electron-store`, and `electron-builder` are all superseded. React/TypeScript/Vite/Monaco/Zustand carry over unchanged; DB drivers move into a new backend server component; hosting is Render's free tier + UptimeRobot; a single-user login gate is now required (a desktop app didn't need one). See `DECISIONS.md` for the full decision history and what's still open (backend framework, secrets storage, login mechanics).
 
-**Status: Complete**, as evidenced by the locked stack record in `DECISIONS.md` (originally `docs/tech.md`, migrated).
+**Status: Complete**, as a locked direction — see `DECISIONS.md` (originally `docs/tech.md`, migrated, then revised 2026-09-08). Several implementation-level specifics under the new browser-based direction remain open — see `TASKS.md`.
 
 **0c. Visual Prototyping**
 - A design canvas prototype (`design/master-admin-panel.html`, plus its source `design/Main.dc.html`/`design/canvas.json`) built and published, demonstrating the VS Code-metaphor UI as a mock frontend only — no real API calls, no real DB connection.

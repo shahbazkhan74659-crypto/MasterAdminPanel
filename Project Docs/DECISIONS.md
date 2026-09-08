@@ -40,7 +40,7 @@ These decisions were made during prior planning discussions, before any producti
 
 ## Decision: Production stack — Electron + React/TypeScript + Vite + Monaco + Zustand + native DB drivers
 
-- Status: Accepted
+- Status: **Superseded** (2026-09-08) — see "Browser-based web app, not an Electron desktop shell" below.
 - Date: Same planning period as above (locked alongside the design)
 - Context: The SQL console requirement (direct DB connection) rules out a pure web app — a browser cannot open a raw TCP connection to Postgres/MySQL/SQLite. The panel needs a real backend process with native DB drivers.
 - Decision:
@@ -54,16 +54,49 @@ These decisions were made during prior planning discussions, before any producti
   - Local app state (layout, recent sites, open tabs): **electron-store** — simple JSON persistence for non-secret settings only.
   - Packaging: **electron-builder** — produces a Windows installer for the primary dev machine.
 - Reasoning: Everything follows from the direct-DB-connection constraint; see per-row rationale above.
-- Consequences: This resolves the "Runtime: local desktop app vs. web app styled to look like VS Code" question that the original design record had listed as open — Electron (a local desktop app) is the settled answer, not a web app. No implementation exists yet against this stack — see `PHASES.md`, `ARCHITECTURE.md`.
+- Consequences: This resolved the "Runtime: local desktop app vs. web app styled to look like VS Code" question that the original design record had listed as open — in favor of Electron. **Reversed 2026-09-08** — see "Browser-based web app, not an Electron desktop shell" below. No implementation was ever built against this stack, so nothing needs unwinding in code.
 
 ## Decision: Reject Tauri as the shell
 
-- Status: Accepted (rejected alternative)
+- Status: **Superseded** (2026-09-08) — moot now that the shell itself (Electron) is superseded; kept here as a historical record of the reasoning, since a Rust/Tauri shell could resurface as an alternative if the browser-based direction is ever reversed again.
 - Date: Same planning period as above
 - Context: Tauri (Rust backend + OS webview) was considered for its smaller binary size and lower memory use, as an alternative to Electron.
 - Decision: Rejected.
 - Reasoning: The SQL console's DB layer would either need a Rust rewrite (`sqlx`) or a Node sidecar process anyway under Tauri, adding complexity without a clear payoff for a personal, single-user tool where dev speed matters more than binary size.
 - Consequences: Revisit only if resource usage becomes a real practical problem — not expected to be reopened otherwise.
+
+## Decision: Browser-based web app, not an Electron desktop shell
+
+- Status: Accepted
+- Date: 2026-09-08
+- Context: The owner decided to run the panel as a browser-based site rather than an installed Electron desktop app, superseding the earlier Electron/Tauri-shell decision above. This does not remove the original constraint that drove that decision — a browser still cannot open a raw TCP connection to Postgres/MySQL/SQLite for the SQL console — it moves where that constraint is satisfied: a real backend server process now holds the native DB drivers (still `pg`/`mysql2`/`better-sqlite3`, still Node.js) and the browser talks to it over HTTP/WebSocket instead of an Electron main process talked to over IPC.
+- Decision: Build the panel as a client (React + TypeScript, Vite) + backend server (Node.js) web app, deployed as a hosted site rather than packaged as a desktop installer.
+- Reasoning: Owner's explicit direction ("just use it as a browser based site"), prioritizing browser accessibility over an installed desktop app.
+- Consequences:
+  - Everything Electron-specific from the superseded stack decision no longer applies: `safeStorage` (secrets), `electron-store` (local settings), `electron-builder` (packaging), and `contextBridge`/IPC (renderer↔main communication).
+  - What still carries over unchanged: React + TypeScript + Vite (frontend), Monaco (Monaco is web-native — it works in a plain browser at least as well as in Electron), Zustand (frontend state), and the `pg`/`mysql2`/`better-sqlite3` drivers (now living in a backend server instead of an Electron main process).
+  - A backend server framework/runtime choice is now needed (not yet decided — see Open decisions below).
+  - Secrets storage (API keys, DB credentials) needs a new server-side mechanism to replace `safeStorage` — not yet decided.
+  - A new requirement that didn't exist for the desktop app: **the site needs its own authentication in front of it**. A desktop app installed only on the owner's machine was implicitly trusted because only the owner could open it; a browser-based site is reachable by anyone who has the URL unless it's gated. See the "Single-user login" decision below.
+  - Hosting is decided — see the "Render free tier + UptimeRobot" decision below.
+
+## Decision: Single-user login for now; multi-agent/admin-policy access deferred
+
+- Status: Accepted (partial) — single login only; the admin/policy layer is a stated future direction, not designed
+- Date: 2026-09-08
+- Context: Going browser-based (see above) means the site needs real authentication, unlike the desktop app's implicit single-operator trust model. The owner was asked what auth model to build.
+- Decision: For now, build only a single-user login flow (the owner's own account). The owner has also stated a future direction — additional accounts ("agents") should only be creatable by an Admin, under some policy system — but explicitly scoped that out of current work: "for now only Login flow."
+- Reasoning: Owner's explicit direction — keep the current build scoped to what's needed now (a working login gate) rather than building out a multi-account/policy system that isn't needed yet.
+- Consequences: Do not build multi-account creation, roles, or a policy engine until the owner asks for it specifically — treat "Admin-created agents under a policy" as a noted future direction in `PROJECT.md`/`TASKS.md`, not a current requirement. Specific login mechanics (session vs. token, password storage/hashing, where the single account's credentials live) are not yet decided — see Open decisions below.
+
+## Decision: Hosting — Render free tier + UptimeRobot
+
+- Status: Accepted
+- Date: 2026-09-08
+- Context: The browser-based site (see above) needs a hosting target. The owner's other project, Portfolio, already uses this exact pattern successfully (see Portfolio's own `Project Docs/ARCHITECTURE.md`/`DECISIONS.md`).
+- Decision: Host on Render's free tier, with a free UptimeRobot monitor pinging the live URL to prevent Render's free-tier idle spin-down/cold-start — the same arrangement as the Portfolio project.
+- Reasoning: Owner's explicit direction, reusing a pattern already proven to work on another of the owner's projects.
+- Consequences: Render's free tier has no persistent disk (a real constraint the Portfolio project also hit for media storage) — if this panel ever needs to persist files (e.g. uploaded media through the Content Admin API path) rather than just proxying to remote sites, the same kind of external-storage workaround Portfolio needed (Cloudinary) may apply here too. Not yet relevant to the SQL-console/login-only current scope. Database hosting for the panel's *own* data (e.g. the single login account) is not yet decided — see Open decisions below.
 
 ## Decision: Build a visual design canvas prototype before production implementation
 
@@ -79,6 +112,8 @@ These decisions were made during prior planning discussions, before any producti
 Carried forward from the original design record — do not treat any of these as settled:
 
 - **Spec-first vs. site-first**: lock down the full Content Admin API spec before building anything, or start from one real existing site and generalize the contract from what it actually needs.
-- **Auth/secrets storage scoping**: `safeStorage` is chosen as the storage mechanism (see stack decision above), but exactly how per-site API keys/tokens and per-site DB credentials get scoped/organized (e.g. one vault entry per site vs. per connection) is not yet decided.
+- **Backend server framework/runtime**: Node.js is implied (to reuse `pg`/`mysql2`/`better-sqlite3`), but no specific framework (Express, Fastify, etc.) has been chosen for the browser-based backend — see "Browser-based web app" decision above.
+- **Secrets storage (browser-based)**: `safeStorage` no longer applies now that the panel isn't Electron — how API keys/tokens and DB credentials get stored server-side (env vars, an encrypted server-side store, a secrets manager, etc.) is not yet decided.
+- **Login mechanics**: session vs. token auth, password storage/hashing, and where the single owner account's credentials live are not yet decided — see "Single-user login" decision above.
 - **Versioning/history**: whether records get git-like diff/version history in the editor pane.
 - **SQL console write safety**: read-only-by-default vs. unrestricted (see the SQL console decision above).
