@@ -2,16 +2,17 @@
 
 ## Active
 
-[Phase 2] "Backend Server (Node.js)" — not yet started. Phase 1 (both 1a and 1b) is now fully complete (see Completed below). Next up is standing up the actual Node.js backend server — including choosing its framework (Express, Fastify, or otherwise), still an open decision per Next below. See `PHASES.md` for the full objective/scope/completion criteria.
+[Phase 3] "Temporary Blank Test Page for Backend/Database Engine/Flow Testing" — not yet started. [Phase 2] "Backend Server (Node.js)" is now complete (see Completed below) — the real `backend/` Express + TypeScript server exists with a working `GET /health` route. Next up is the disposable blank HTML test page that will exercise this backend and all three Phase 1 database engines. See `PHASES.md` for the full objective/scope/completion criteria.
 
 ## Next
 
-The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 2 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
-- Backend server framework/runtime choice (Node.js is implied; specific framework — Express, Fastify, etc. — to be decided as part of [Phase 2], see `PHASES.md`).
+The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 3 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
 - Secrets-storage mechanism now that `safeStorage` no longer applies — to be decided as part of [Phase 10] "Secrets Storage Mechanism", see `PHASES.md`.
 - Login mechanics: session vs. token auth, password storage/hashing, where the single owner account's credentials live — to be decided as part of [Phase 4] "Login Auth Engine/Flow", see `PHASES.md`.
 - Whether the SQL console defaults to read-only with a confirm step before non-`SELECT` statements, or stays unrestricted — to be decided as part of [Phase 8] "SQL Console Access/Modification Policy", see `PHASES.md`.
 - Whether records get git-like diff/version history in the editor pane — **not assigned to any phase** in the locked roadmap; a genuinely open idea with no scheduled home.
+
+Resolved 2026-09-08: "backend server framework/runtime" is settled — **Express + TypeScript** (owner's direct choice, Phase 2). See `PHASES.md`.
 
 Resolved 2026-09-08: "spec-first vs. site-first" is settled by roadmap ordering — Phase 6/7 (build the Content Admin API) come before Phase 9 (document its spec), so the project proceeds **site-first**. See `DECISIONS.md`.
 
@@ -37,3 +38,4 @@ None.
 - [x] Split [Phase 1] into [Phase 1a] "Local Postgres for the App Itself" and [Phase 1b] "All Database Engine Types Setup" — 2026-09-08, owner's direct command. 1a is new: a dedicated local Postgres instance for the panel's own data (login account, secrets), giving Phase 4/10 a concrete local home instead of the previously open "database from Phase 1, or another mechanism" framing. 1b carries over the original Phase 1 scope unchanged (local Postgres/MySQL/SQLite as target/managed databases). Updated all downstream cross-references in `PHASES.md` (Phases 3, 4, 5, 7, 11, 28) and this file's Active/Next sections accordingly.
 - [x] [Phase 1a] Completed — 2026-09-08. Used the owner's already-installed local PostgreSQL 18 (native Windows service, shared across their other local projects) — no new install needed. Created a dedicated, isolated role/database (`adminpanel_app`/`adminpanel_app`), verified reachable via `psql` connecting as that role (not the `postgres` superuser), and recorded connection details in a local, gitignored `.env.local` at the repo root (interim placeholder — Phase 10 still owns the real secrets-storage decision). See `PHASES.md`'s Phase 1a entry for full verification detail.
 - [x] [Phase 1b] Completed — 2026-09-08. Postgres 18 and MySQL 8.0 were already installed and running natively — no new installs needed. Provisioned isolated target-engine credentials distinct from Phase 1a's app-own database: Postgres `adminpanel_target_pg`, MySQL `adminpanel_target_mysql`, and a real SQLite file at `local-data/adminpanel_target.sqlite` (new gitignored folder). Each engine verified with a full `CREATE TABLE`/`INSERT`/`SELECT`/`DROP TABLE` round-trip. Connection details appended to `.env.local` under a `TARGET_*` prefix. **Phase 1 (1a + 1b) is now fully complete.** See `PHASES.md`'s Phase 1b entry for full verification detail.
+- [x] [Phase 2] Completed — 2026-09-08. Resolved the framework choice: **Express + TypeScript** (owner's direct decision). Scaffolded a real `backend/` Node.js project with a single `GET /health` route (no DB/login/SQL-console logic yet, per this phase's own scope). Verified via a real HTTP request (`curl` → `200 {"ok":true}`) and a clean `tsc --noEmit` type-check. This is the project's first real application code — `ARCHITECTURE.md` updated accordingly.

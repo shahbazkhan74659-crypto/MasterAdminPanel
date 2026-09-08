@@ -89,7 +89,7 @@ To be defined in further detail as the owner directs, including the specific fra
 ### Completion Criteria
 A real Node.js backend server runs locally, using whichever framework gets chosen during this phase, and responds to at least one real HTTP request — confirming the server itself works before any database, SQL console, or Content Admin API logic is built into it.
 
-**Status: Not started.**
+**Status: Complete (2026-09-08).** Framework decided: **Express**, written in **TypeScript** (owner's direct choice, matching the frontend's language). Scaffolded a new `backend/` project (`package.json`, `tsconfig.json`, `src/index.ts`) with a single `GET /health` route returning `{ ok: true }`, listening on `process.env.PORT` (default `3001`) — deliberately nothing else yet, no DB/SQL-console/Content-Admin-API logic, per this phase's own scope. Verified with a real HTTP request (`curl http://localhost:3001/health` → `200 {"ok":true}`) and a clean `tsc --noEmit` type-check, then the dev server was stopped again.
 
 ## Phase 3 — Temporary Blank Test Page for Backend/Database Engine/Flow Testing
 

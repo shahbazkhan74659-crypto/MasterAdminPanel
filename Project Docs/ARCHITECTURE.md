@@ -1,16 +1,16 @@
 # Architecture
 
-This describes the **actual current implementation** — a design/prototype layer only, no production code — followed by the **planned** production architecture. See `DECISIONS.md` for the reasoning behind the planned design and stack.
+This describes the **actual current implementation** — a design/prototype layer plus a minimal Phase 2 backend scaffold, well short of the full production system — followed by the **planned** production architecture. See `DECISIONS.md` for the reasoning behind the planned design and stack.
 
 ## System Overview
 
-**Implemented:** The repository contains no production application code. It holds a published Claude Design canvas, `design/master-admin-panel.html` (a self-contained HTML artifact — an early preview of the Claude Design canvas editor, packaged to run as a published artifact page), plus its editable source files `design/Main.dc.html` (the single artboard's content) and `design/canvas.json` (canvas layout). This is the interactive visual prototype referenced as "Prototype" in the design record (see `DECISIONS.md`) — a mock frontend demonstrating the intended VS Code-styled UI, with no real API calls, no real database connection, and no backend behind it. An empty `Prototype/` folder exists at the repo root with no content.
+**Implemented:** The repository holds a published Claude Design canvas, `design/master-admin-panel.html` (a self-contained HTML artifact — an early preview of the Claude Design canvas editor, packaged to run as a published artifact page), plus its editable source files `design/Main.dc.html` (the single artboard's content) and `design/canvas.json` (canvas layout). This is the interactive visual prototype referenced as "Prototype" in the design record (see `DECISIONS.md`) — a mock frontend demonstrating the intended VS Code-styled UI, with no real API calls, no real database connection. An empty `Prototype/` folder exists at the repo root with no content. **As of Phase 2 (2026-09-08):** a real `backend/` Node.js project exists (Express + TypeScript) with a single `GET /health` route — no DB drivers, login, SQL console, or Content Admin API logic wired in yet (that starts Phase 4+). No frontend application code exists yet — the design canvas above remains the only UI reference until Phase 12.
 
 **Planned:** A browser-based web app (**superseding an earlier Electron desktop-app plan**, reversed 2026-09-08 — see `DECISIONS.md`): a React + TypeScript frontend (built via Vite), styled and structured after the VS Code interface, served by a Node.js backend server, gated behind a single-user login. The frontend talks to two distinct backends: (1) arbitrary remote sites over HTTPS via the Content Admin API protocol (client-side `fetch`, unchanged from the original plan), and (2) this panel's own backend server, which holds the native DB drivers and brokers the SQL console's direct database connections (replacing Electron's main-process/IPC arrangement). Deployment target: Render's free tier + an UptimeRobot keep-alive monitor, the same pattern as the Portfolio project, backed by a Neon Postgres database for the panel's own production data. No planned-architecture code has been written yet — but the full build order is locked: `PHASES.md`'s Phase 0–30 roadmap covers local database setup, the backend server and its login/SQL-console/data-management/Content-Admin-API/secrets pieces, an end-to-end backend test pass, every static UI piece matched to the design canvas prototype, wiring the UI to the backend, Monaco and Zustand build-outs, Image/Video field support, and finally production deployment plus live verification.
 
 ## Technology Stack
 
-**Implemented:** None (design-only artifact, see above).
+**Implemented:** `backend/` — Node.js (v24) + Express 4 + TypeScript, run via `tsx` in dev and compiled with `tsc` for production, ESM module format. Nothing else (no DB drivers, frontend framework, Monaco, or Zustand) is wired in yet.
 
 **Planned** (see `DECISIONS.md` — Electron-specific rows below are superseded; carried-over and new rows reflect the 2026-09-08 browser-based pivot):
 
@@ -31,7 +31,7 @@ The Electron-vs-Tauri shell decision (and the Tauri rejection reasoning) is now 
 
 ## Application Structure
 
-**Implemented:** No application structure exists yet — only the design canvas artifact described above.
+**Implemented:** `backend/src/index.ts` — a single-file Express app with one route (`GET /health`). No further module structure exists yet; that grows in Phase 4 onward (login, SQL console, data management, Content Admin API each get their own logic built into this server). No frontend structure exists yet — only the design canvas artifact described above.
 
 **Planned:** Not yet broken down into concrete modules/files — no code has been written against the now-locked Phase 0–30 roadmap yet (see `PHASES.md`). The product design (see `PROJECT.md`) implies at least: a frontend UI layer (activity bar / explorer / tabs / editor pane / command palette / status bar / SQL Console panel / split panes), a Content Admin API client module, a login/auth flow, a backend-server DB-connection module per supported engine, and a data-management/schema-driven CRUD engine — but no file/module layout has been decided. The roadmap's own ordering is a real architectural signal worth preserving here: backend pieces (server, login, SQL console, data management engine, Content Admin API, secrets) are built and end-to-end tested before any static UI, and every UI piece is built to match the design canvas prototype exactly *before* being wired to the backend — see `PHASES.md` for the full sequencing.
 
