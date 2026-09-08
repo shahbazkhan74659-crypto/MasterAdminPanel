@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Phase 3 backend test page</title>
+</head>
+<body>
+<h1>Phase 3 — backend/DB test page (temporary, deleted in Phase 11)</h1>
+
+<button onclick="test('postgres')">Test Postgres</button>
+<button onclick="test('mysql')">Test MySQL</button>
+<button onclick="test('sqlite')">Test SQLite</button>
+
+<pre id="postgres">postgres: (not run yet)</pre>
+<pre id="mysql">mysql: (not run yet)</pre>
+<pre id="sqlite">sqlite: (not run yet)</pre>
+
+<script>
+async function test(engine) {
+  const el = document.getElementById(engine);
+  el.textContent = engine + ": running...";
+  try {
+    const res = await fetch("/test-api/" + engine);
+    const data = await res.json();
+    el.textContent = engine + ": " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = engine + ": fetch failed - " + err;
+  }
+}
+</script>
+</body>
+</html>

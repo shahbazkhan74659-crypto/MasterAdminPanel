@@ -102,6 +102,8 @@ To be defined in further detail as the owner directs. Implied by the phase name:
 ### Completion Criteria
 The blank test page can trigger and show the result of at least one real backend call per database engine (Postgres, MySQL, SQLite) against the Phase 2 server, confirming the backend/DB flow works end-to-end from a real HTTP client (the page itself) rather than only from server-side scripts/tests.
 
+**Status: Complete (2026-09-08).** Added `pg`/`mysql2`/`better-sqlite3`/`dotenv` to `backend/`; three throwaway endpoints in `backend/src/testRoutes.ts` (mounted at `/test-api/*`, kept in its own file for a clean Phase 11 deletion) each open a real connection to the Phase 1b target databases and run a real query. A plain static page, `backend/public/test.html`, has one button per engine that fetches its endpoint and dumps the raw JSON. Verified by actually clicking all three buttons in a real browser — Postgres, MySQL, and SQLite each returned real data (server time/current DB, or SQLite's version string). **Bug caught and fixed along the way:** `.env.local`'s `TARGET_MYSQL_PASSWORD` (and `ADMINPANEL_DB_PASSWORD`/`TARGET_PG_PASSWORD` proactively too) contained an unquoted `#`, which `dotenv` treats as a comment marker — silently truncating the password and breaking MySQL auth. Fixed by quoting all three password values in `.env.local`; Postgres/SQLite happened not to contain `#` so weren't affected, but are now quoted defensively too.
+
 **Status: Not started.**
 
 ## Phase 4 — Login Auth Engine/Flow
