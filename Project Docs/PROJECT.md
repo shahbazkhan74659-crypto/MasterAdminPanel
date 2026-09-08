@@ -34,7 +34,7 @@ The project owner, personally — as the operator managing content across their 
 ## Core Features
 
 - Login flow: single-user authentication gating the whole panel (current scope — see `DECISIONS.md`). Future, not-yet-designed direction: an Admin role able to create additional "agent" accounts under some policy system — noted here as intent only, not to be built until asked for.
-- Content Admin API client: auth, collection listing, schema-driven CRUD forms, media upload/listing, search — across any site implementing the contract.
+- Content Admin API client: auth, collection listing, schema-driven CRUD forms, media upload/listing, search — across any site implementing the contract. Image and Video are real, first-class schema field types (not just a narratively-mentioned "image picker") — see `DECISIONS.md`.
 - VS Code-metaphor UI: activity bar, explorer sidebar, editor tabs, command palette, status bar, split panes.
 - SQL console: direct DB connection per site, table chips, query input, result grid — a deliberate, explicit exception to the schema-driven CRUD path (see `DECISIONS.md`).
 
@@ -42,7 +42,7 @@ The existing design canvas prototype (`design/master-admin-panel.html`) demonstr
 
 ## Current Status
 
-Design and stack locked; no production implementation has started. See `PHASES.md` and `TASKS.md`.
+Design, stack, and the full build roadmap are all locked (Phase 0 through Phase 30, see `PHASES.md`); no production implementation has started yet. `PHASES.md` is itself locked against unprompted edits — only the project owner (Admin) adds or changes phases from here.
 
 ## Constraints
 
@@ -56,4 +56,4 @@ A single-owner, personal admin tool spanning potentially many managed sites/data
 
 ## Success Criteria
 
-To be defined — no phases or completion criteria have been set yet beyond the design/stack lock. See `PHASES.md`.
+Every phase in the locked roadmap (`PHASES.md`) carries its own completion criteria, from local database setup through live-deployment end-to-end verification (Phase 30). No project-wide success criteria beyond "the roadmap's phases are all complete" have been separately defined.

@@ -2,26 +2,22 @@
 
 ## Active
 
-None in progress. [Phase 0] "Pre-Development (Design & Stack Decision)" is complete — design and stack are locked (see `PHASES.md`, `DECISIONS.md`). No implementation work has started.
+[Phase 1] "Local Database Setup (All Engine Types)" — not yet started. Get local Postgres, MySQL, and SQLite all installed, configured, and ready for development use — the panel needs to support whichever engine a managed site actually runs (e.g. Portfolio → Postgres, TS Library → MySQL), not just one. See `PHASES.md` for the full objective/scope/completion criteria. This is the first phase of the now-fully-locked Phase 0–30 roadmap — work proceeds phase by phase from here.
 
 ## Next
 
-The owner has identified two candidate directions for the first real implementation step, but has not committed to either or broken it into phases — do not assume one is chosen:
+The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 1 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
+- Backend server framework/runtime choice (Node.js is implied; specific framework — Express, Fastify, etc. — to be decided as part of [Phase 2], see `PHASES.md`).
+- Secrets-storage mechanism now that `safeStorage` no longer applies — to be decided as part of [Phase 10] "Secrets Storage Mechanism", see `PHASES.md`.
+- Login mechanics: session vs. token auth, password storage/hashing, where the single owner account's credentials live — to be decided as part of [Phase 4] "Login Auth Engine/Flow", see `PHASES.md`.
+- Whether the SQL console defaults to read-only with a confirm step before non-`SELECT` statements, or stays unrestricted — to be decided as part of [Phase 8] "SQL Console Access/Modification Policy", see `PHASES.md`.
+- Whether records get git-like diff/version history in the editor pane — **not assigned to any phase** in the locked roadmap; a genuinely open idea with no scheduled home.
 
-1. Write a first draft of the **Content Admin API spec** (spec-first).
-2. Pick one existing site (e.g. the Portfolio project) to retrofit as the first real implementer of the contract, and wire a real DB connection for its SQL console (site-first).
+Resolved 2026-09-08: "spec-first vs. site-first" is settled by roadmap ordering — Phase 6/7 (build the Content Admin API) come before Phase 9 (document its spec), so the project proceeds **site-first**. See `DECISIONS.md`.
 
-This mirrors the still-open "spec-first vs. site-first" decision in `DECISIONS.md`.
+Resolved 2026-09-08: "where the panel's own data gets persisted" (Render's free tier has no disk) is settled in direction — [Phase 28] "Neon Free-Tier Postgres Setup" — though the actual setup and migration of Phase 4/10's data into it hasn't happened yet.
 
-Following the 2026-09-08 pivot to a browser-based web app (see `DECISIONS.md`), several new implementation-level decisions are also open and should be resolved (or explicitly deferred with the owner's sign-off) before or during whichever direction above gets picked:
-- Backend server framework/runtime choice (Node.js is implied; specific framework not chosen).
-- Secrets-storage mechanism now that `safeStorage` no longer applies (server-side env vars, encrypted store, secrets manager, etc.).
-- Login mechanics: session vs. token auth, password storage/hashing, where the single owner account's credentials live.
-- Where the panel's own data (login account, any per-site credentials) gets persisted, given Render's free tier has no persistent disk.
-- Whether records get git-like diff/version history in the editor pane.
-- Whether the SQL console defaults to read-only with a confirm step before non-`SELECT` statements, or stays unrestricted.
-
-Explicitly **not** current scope, per the owner's direction: multi-account creation, an Admin role, or any policy system for additional "agent" accounts. Only the single-user login flow is being built for now — see `DECISIONS.md`, `PROJECT.md`.
+Explicitly **not** current scope, per the owner's direction: multi-account creation, an Admin role, or any policy system for additional "agent" accounts. Only the single-user login flow is being built for now — see `DECISIONS.md`, `PROJECT.md`. Also not scheduled: a dedicated media library/browser UI beyond per-record Image/Video fields (Phase 6/26) — see `DECISIONS.md`.
 
 ## Blocked
 
@@ -37,3 +33,4 @@ None.
 - [x] Committed the initial design/stack/prototype work to `main` — 2026-09-07 (commit `90a90b4`, "Add Master Admin Panel design, tech stack decision, and working prototype").
 - [x] Migrated `docs/DESIGN.md` and `docs/tech.md` into this 6-file documentation system (`PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md`) and removed the original two files — 2026-09-08, matching the Portfolio project's documentation structure.
 - [x] Revised [Phase 0b]'s stack decision: pivoted from an Electron desktop app to a browser-based web app (frontend + backend server), hosted on Render's free tier + UptimeRobot, gated by a new single-user login (a desktop app didn't need one) — 2026-09-08, owner's explicit direction ("just use it as a browser based site"). A future Admin/policy-controlled multi-account system was noted as a direction but explicitly scoped out of current work. Updated `PHASES.md`, `PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md` accordingly — see `DECISIONS.md` for the full before/after and newly-open implementation decisions.
+- [x] Defined and locked the full build roadmap, Phase 1 through Phase 30 — 2026-09-08, phase by phase per Admin's direct commands: local multi-engine DB setup (1), backend server (2), a temporary test page (3), login (4), SQL console backend (5), the data management/CRUD engine and Content Admin API implementation (6–7, reordered mid-session once their dependency became clear), the SQL console's access/modification policy narrowed to backend-only (8), the Content Admin API spec document (9), secrets storage (10), a backend end-to-end test pass retiring the Phase 3 test page (11), every static UI piece matched to the design canvas prototype (12–22, including a flagged and resolved overlap between the old "Phase 8" and the new static SQL Console panel phase), wiring the full UI to the backend (23), Monaco and Zustand taken from minimal to fully functional (24–25), Image/Video field types split across backend (folded into Phase 6) and frontend (26), full local end-to-end testing (27), the panel's own production database on Neon (28), actual Render deployment with UptimeRobot (29), and full live end-to-end testing (30). `PHASES.md` was then explicitly locked against further unprompted edits — see `PHASES.md`'s lock notice and `CLAUDE.md` rule 3. `PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md`, and this file were all updated to stay consistent with the completed roadmap (stale "not yet defined"/"open" framing removed, phase cross-references added throughout, a new decision record added for the Image/Video field types).
