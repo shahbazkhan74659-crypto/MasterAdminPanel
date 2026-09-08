@@ -42,18 +42,41 @@ Define the product concept, UI/interaction model, core protocol architecture, an
 
 **Phase 0 overall status: Complete.**
 
-## Phase 1 — Local Database Setup (All Engine Types)
+## Phase 1 — Local Database Setup
 
 ### Objective
-Get all three of the panel's planned database engines installed, configured, and ready to use for development locally — **Postgres, MySQL, and SQLite** (per `DECISIONS.md`'s stack decision) — not just Postgres. Reasoning: the panel is meant to manage/query whichever engine a given target site actually runs on (e.g. Portfolio → Postgres, TS Library → MySQL), so all three need to be available to develop and test against from the start, not added one at a time later.
+Set up every local database needed before any backend server code is written against them: the panel's own storage (Phase 1a) and the local target-database engines it will manage/query (Phase 1b). **Split into 1a/1b on 2026-09-08 (Admin's direct command)** — the original single Phase 1 only covered the target-engine setup now scoped to 1b; 1a is new and addresses a real gap Phase 4 had already flagged as open ("where does the panel's own account data get persisted locally").
 
-### Scope
-To be defined in further detail as the owner directs. Implied by the phase name: install/provision a local PostgreSQL instance, a local MySQL instance, and a local SQLite database file, create whatever database/role/credentials the panel's backend will use for each during development, and confirm all three are reachable — before any backend server code is written against them (backend framework choice is still open, see `TASKS.md`).
+**1a. Local Postgres for the App Itself**
 
-### Completion Criteria
-All three local database engines (Postgres, MySQL, SQLite) are running/available and reachable, each with a dedicated database/credentials for this project's development use, confirmed via a real connection to each (e.g. `psql`, a MySQL client, and opening the SQLite file) — no application code needs to exist yet for this phase to be complete.
+#### Objective
+Set up a local PostgreSQL instance dedicated to AdminPanel's own data during local development — distinct from any of Phase 1b's target/managed databases. This is the local-dev counterpart to Phase 28's production Neon Postgres, and gives Phase 4 (login) and Phase 10 (secrets storage) a concrete local place to persist the panel's own account/credential data instead of leaving it unresolved.
+
+#### Scope
+To be defined in further detail as the owner directs. Implied by the phase name: install/provision a local PostgreSQL instance for the app's own data only, create whatever database/role/credentials the backend will use for it during development, and confirm it's reachable — kept separate from Phase 1b's Postgres instance (which represents a *managed target site*, not the panel itself).
+
+#### Completion Criteria
+A local Postgres instance dedicated to the app's own data is running and reachable (e.g. via `psql`), with a dedicated database/credentials for this project's development use — no application code needs to exist yet for this phase to be complete.
 
 **Status: Not started.**
+
+**1b. All Database Engine Types Setup (Local Target/Managed Databases)**
+
+#### Objective
+Get all three of the panel's planned target-database engines installed, configured, and ready to use for development locally — **Postgres, MySQL, and SQLite** (per `DECISIONS.md`'s stack decision) — not just Postgres. Reasoning: the panel is meant to manage/query whichever engine a given target site actually runs on (e.g. Portfolio → Postgres, TS Library → MySQL), so all three need to be available to develop and test against from the start, not added one at a time later. These represent the sites/databases the panel *manages* (via the SQL Console and Content Admin API) — not the panel's own storage, which is Phase 1a's job.
+
+#### Scope
+To be defined in further detail as the owner directs. Implied by the phase name: install/provision a local PostgreSQL instance, a local MySQL instance, and a local SQLite database file, create whatever database/role/credentials the panel's backend will use for each during development, and confirm all three are reachable — before any backend server code is written against them (backend framework choice is still open, see `TASKS.md`).
+
+#### Completion Criteria
+All three local target-database engines (Postgres, MySQL, SQLite) are running/available and reachable, each with a dedicated database/credentials for this project's development use, confirmed via a real connection to each (e.g. `psql`, a MySQL client, and opening the SQLite file) — no application code needs to exist yet for this phase to be complete.
+
+**Status: Not started.**
+
+### Completion Criteria
+Both Phase 1a and Phase 1b are complete — see each sub-phase's own completion criteria above.
+
+**Phase 1 overall status: Not started.**
 
 ## Phase 2 — Backend Server (Node.js)
 
@@ -71,7 +94,7 @@ A real Node.js backend server runs locally, using whichever framework gets chose
 ## Phase 3 — Temporary Blank Test Page for Backend/Database Engine/Flow Testing
 
 ### Objective
-Build a temporary, minimal ("white blank") `.html` test page purely to exercise and verify the backend — hitting real endpoints on the Phase 2 backend server, testing each of the three database engines' connection/query flow (Postgres, MySQL, and SQLite, all set up in Phase 1), and validating the overall request/response flow end-to-end — before any real frontend (React/Vite, VS Code-metaphor UI) is built.
+Build a temporary, minimal ("white blank") `.html` test page purely to exercise and verify the backend — hitting real endpoints on the Phase 2 backend server, testing each of the three database engines' connection/query flow (Postgres, MySQL, and SQLite, all set up in Phase 1b), and validating the overall request/response flow end-to-end — before any real frontend (React/Vite, VS Code-metaphor UI) is built.
 
 ### Scope
 To be defined in further detail as the owner directs. Implied by the phase name: a disposable, unstyled static HTML page (no design system, no framework) with just enough script/markup to trigger backend calls (against the Phase 2 server) and display raw results, used as a throwaway diagnostic harness rather than a step toward the real UI. Explicitly not the real frontend — see `DECISIONS.md`/`ARCHITECTURE.md`'s planned React/TypeScript/Vite frontend, which this does not replace or evolve into.
@@ -87,7 +110,7 @@ The blank test page can trigger and show the result of at least one real backend
 Build the single-user login flow's backend (per `DECISIONS.md`'s "Single-user login for now" decision) — the authentication engine that will gate the panel once a real frontend exists, built into the Phase 2 backend server.
 
 ### Scope
-To be defined in further detail as the owner directs, including the still-open login mechanics (see `DECISIONS.md`/`TASKS.md`): session vs. token auth, password storage/hashing, and where the single owner account's credentials live (this phase should resolve where that account is persisted — a database from Phase 1, or another mechanism — not assume one). Implied by the phase name: real login/logout endpoints on the Phase 2 backend server, with actual credential verification — not a stub. **Per the standing convention above, this is backend work** — a real login *page/form* is real-frontend work and does not happen in this phase; only whatever minimal form Phase 3's blank test page needs to exercise the login endpoints (submit credentials, show success/failure, confirm a session/token is issued).
+To be defined in further detail as the owner directs, including the still-open login mechanics (see `DECISIONS.md`/`TASKS.md`): session vs. token auth, password storage/hashing, and where the single owner account's credentials live (this phase should resolve where that account is persisted — Phase 1a's local Postgres for the app itself, or another mechanism — not assume one). Implied by the phase name: real login/logout endpoints on the Phase 2 backend server, with actual credential verification — not a stub. **Per the standing convention above, this is backend work** — a real login *page/form* is real-frontend work and does not happen in this phase; only whatever minimal form Phase 3's blank test page needs to exercise the login endpoints (submit credentials, show success/failure, confirm a session/token is issued).
 
 ### Completion Criteria
 A real login endpoint on the Phase 2 backend server accepts the single owner account's credentials, correctly accepts valid ones and rejects invalid ones, and issues whatever session/token mechanism gets decided during this phase — exercised via Phase 3's blank test page, not a real UI. Login mechanics (session vs. token, password hashing, credential storage location) are explicitly decided as part of this phase, not left implicit.
@@ -100,10 +123,10 @@ A real login endpoint on the Phase 2 backend server accepts the single owner acc
 Build the SQL query console — the dedicated, direct-to-database query tool that is a deliberate, explicit exception to the schema-driven Content Admin API path (see `DECISIONS.md`).
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by `PROJECT.md`/`DECISIONS.md`'s existing design record: the console's real logic (clickable table listing, running a query, returning a real result set with columns/rows/row count/elapsed time), built into the Phase 2 backend server using its native per-engine drivers (`pg`/`mysql2`/`better-sqlite3`, per `ARCHITECTURE.md`) rather than through the Content Admin API — across all three engines set up in Phase 1, not just Postgres. Builds directly on Phase 1 (real Postgres/MySQL/SQLite instances to query), Phase 2 (the backend server it runs in), Phase 3 (the backend/DB-engine flow already proven end-to-end for all three), and Phase 4 (the login gate this console should sit behind once a real frontend exists). Still open per `DECISIONS.md`/`TASKS.md` and needing a decision during this phase: whether the console defaults to read-only with an explicit confirm step before non-`SELECT` statements, or stays unrestricted. **Per the standing convention above, this is backend work** — the actual VS Code-styled console UI (table chips, query input panel, result grid) is real-frontend work and does not happen in this phase; only whatever minimal additions Phase 3's blank test page needs to exercise the console's backend endpoints.
+To be defined in further detail as the owner directs. Implied by `PROJECT.md`/`DECISIONS.md`'s existing design record: the console's real logic (clickable table listing, running a query, returning a real result set with columns/rows/row count/elapsed time), built into the Phase 2 backend server using its native per-engine drivers (`pg`/`mysql2`/`better-sqlite3`, per `ARCHITECTURE.md`) rather than through the Content Admin API — across all three engines set up in Phase 1b, not just Postgres. Builds directly on Phase 1b (real Postgres/MySQL/SQLite instances to query), Phase 2 (the backend server it runs in), Phase 3 (the backend/DB-engine flow already proven end-to-end for all three), and Phase 4 (the login gate this console should sit behind once a real frontend exists). Still open per `DECISIONS.md`/`TASKS.md` and needing a decision during this phase: whether the console defaults to read-only with an explicit confirm step before non-`SELECT` statements, or stays unrestricted. **Per the standing convention above, this is backend work** — the actual VS Code-styled console UI (table chips, query input panel, result grid) is real-frontend work and does not happen in this phase; only whatever minimal additions Phase 3's blank test page needs to exercise the console's backend endpoints.
 
 ### Completion Criteria
-A working SQL console **backend** can connect to each of the three local Phase 1 databases (Postgres, MySQL, SQLite), list tables, accept and run a query, and return a real result set (columns, rows, row count, elapsed time) — exercised via Phase 3's blank test page, not a real UI — with the write-safety posture (read-only-by-default vs. unrestricted) explicitly decided rather than left implicit.
+A working SQL console **backend** can connect to each of the three local Phase 1b databases (Postgres, MySQL, SQLite), list tables, accept and run a query, and return a real result set (columns, rows, row count, elapsed time) — exercised via Phase 3's blank test page, not a real UI — with the write-safety posture (read-only-by-default vs. unrestricted) explicitly decided rather than left implicit.
 
 **Status: Not started.**
 
@@ -123,7 +146,7 @@ A real backend endpoint can list a collection/table's records and schema — inc
 ## Phase 7 — Content Admin API (a.k.a. "Custom Admin API"; connects a real website's database to the SQL Console)
 
 ### Objective
-Build a first real implementation of the **Content Admin API** (`PROJECT.md`/`DECISIONS.md`'s originally-designed schema-driven protocol — "Custom Admin API" is the same thing, just different wording, confirmed by the owner) — the protocol/interface layer exposing Phase 6's Data Management System engine to remote sites. This phase's specific, stated capability: it lets a real website's database be connected to the SQL Console built in Phase 5 — i.e. wiring the console up to query a real, external site's database, not just the local Phase 1 databases. **Renumbered 2026-09-08 (was Phase 6) to sit after Phase 6's Data Management System, since this phase exposes that engine's CRUD logic and depends on it existing first.**
+Build a first real implementation of the **Content Admin API** (`PROJECT.md`/`DECISIONS.md`'s originally-designed schema-driven protocol — "Custom Admin API" is the same thing, just different wording, confirmed by the owner) — the protocol/interface layer exposing Phase 6's Data Management System engine to remote sites. This phase's specific, stated capability: it lets a real website's database be connected to the SQL Console built in Phase 5 — i.e. wiring the console up to query a real, external site's database, not just the local Phase 1b databases. **Renumbered 2026-09-08 (was Phase 6) to sit after Phase 6's Data Management System, since this phase exposes that engine's CRUD logic and depends on it existing first.**
 
 ### Scope
 To be defined in further detail as the owner directs. Note the refinement this phase introduces to the existing SQL console decision (`DECISIONS.md`): the console was designed to bypass the Content Admin API and connect **directly** to a target database. For a real remote website whose database isn't directly network-reachable by the panel, this phase's Content Admin API implementation is the bridging mechanism that still gets the console real SQL access to that site's database — technically routed through the site's own API server, but conceptually still "direct, unrestricted SQL access, bypassing schema validation," the same trust boundary the original SQL console decision described, not the schema-driven CRUD path. See `DECISIONS.md` for where this nuance should get folded into the existing decision record. **Per the standing convention above, this is backend work** — building and deploying the Content Admin API server-side (in the Phase 2 backend server, on top of Phase 6's engine), and the panel's backend logic to talk to it — not the real frontend; verify it through Phase 3's blank test page.
@@ -175,13 +198,13 @@ A real secret (e.g. a test DB credential or API key) can be stored via the chose
 ## Phase 11 — End-to-End Backend/Local-DB Testing, and Retiring the Phase 3 Test Page
 
 ### Objective
-Run a full end-to-end test of everything the backend has grown into so far — the Phase 2 server, Phase 4 login, Phase 5 SQL console, Phase 6 data management engine, Phase 7 Content Admin API, and Phase 10 secrets storage — against the Phase 1 local databases (Postgres, MySQL, SQLite), confirming it all actually works together as one system rather than only piecewise via individual phase checks. Once that's verified, **delete Phase 3's temporary blank test page** — its job (a throwaway harness to exercise backend pieces before a real frontend existed) is done.
+Run a full end-to-end test of everything the backend has grown into so far — the Phase 2 server, Phase 4 login, Phase 5 SQL console, Phase 6 data management engine, Phase 7 Content Admin API, and Phase 10 secrets storage — against the Phase 1a/1b local databases (the app's own Postgres and the Postgres/MySQL/SQLite target engines), confirming it all actually works together as one system rather than only piecewise via individual phase checks. Once that's verified, **delete Phase 3's temporary blank test page** — its job (a throwaway harness to exercise backend pieces before a real frontend existed) is done.
 
 ### Scope
 To be defined in further detail as the owner directs. Implied by the phase name: exercise real flows spanning multiple backend pieces together (e.g. log in, then run a SQL console query, then a data-management CRUD operation, then a Content Admin API call, each against a real local database) rather than testing each phase's piece in isolation as before. Only after this passes does the Phase 3 test page get removed from the repo — per `CLAUDE.md` rule 7 (No Silent Destruction), removing it should be a deliberate, called-out step in this phase, not an incidental cleanup.
 
 ### Completion Criteria
-A real end-to-end pass exercises every backend piece built in Phases 2–10 against all three local Phase 1 databases with no failures, and afterward the Phase 3 blank test page (and any of its supporting code) is removed from the repository, with `PHASES.md`/`ARCHITECTURE.md` updated to reflect it no longer exists.
+A real end-to-end pass exercises every backend piece built in Phases 2–10 against the Phase 1a/1b local databases with no failures, and afterward the Phase 3 blank test page (and any of its supporting code) is removed from the repository, with `PHASES.md`/`ARCHITECTURE.md` updated to reflect it no longer exists.
 
 **Status: Not started.**
 
@@ -413,7 +436,7 @@ A real, whole-system end-to-end pass succeeds with no failures across the full f
 Set up a production PostgreSQL database on Neon's free tier — resolving the previously-open "where does the panel's own data live in production" question (`TASKS.md`), since Render's free tier (`DECISIONS.md`'s hosting decision) has no persistent disk. Same pattern as the Portfolio project's own production database.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name: create a Neon project/database for this panel's own production data (the login account from Phase 4, secrets from Phase 10, and whatever else the backend needs to persist) — distinct from Phase 1's *local* dev databases and distinct from the local/remote databases the SQL Console (Phase 5) or Content Admin API (Phase 7) connect to as managed targets. This is the panel's *own* database.
+To be defined in further detail as the owner directs. Implied by the phase name: create a Neon project/database for this panel's own production data (the login account from Phase 4, secrets from Phase 10, and whatever else the backend needs to persist) — the production counterpart to Phase 1a's local Postgres for the app itself, and distinct from Phase 1b's local target engines and the local/remote databases the SQL Console (Phase 5) or Content Admin API (Phase 7) connect to as managed targets. This is the panel's *own* database.
 
 ### Completion Criteria
 A real Neon Postgres database exists and is reachable from the Phase 2 backend server, ready to hold the panel's own production data (login account, secrets, etc.) — no data needs to be migrated into it yet for this phase to be complete, just the database itself set up and connectable.
