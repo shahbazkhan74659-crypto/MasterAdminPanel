@@ -58,7 +58,7 @@ To be defined in further detail as the owner directs. Implied by the phase name:
 #### Completion Criteria
 A local Postgres instance dedicated to the app's own data is running and reachable (e.g. via `psql`), with a dedicated database/credentials for this project's development use — no application code needs to exist yet for this phase to be complete.
 
-**Status: Not started.**
+**Status: Complete (2026-09-08).** Uses the already-installed local PostgreSQL 18 server (native Windows service, shared across the owner's other local projects) — no new install needed. Provisioned a dedicated, isolated role and database: role `adminpanel_app` (LOGIN), database `adminpanel_app` owned by that role. Verified reachable via `psql` connecting *as* `adminpanel_app` (not the `postgres` superuser) — `SELECT 1;` and `\conninfo` both succeeded against `localhost:5432`. Connection details recorded in a local, gitignored `.env.local` at the repo root (interim placement only — real secrets storage mechanism is still Phase 10's job).
 
 **1b. All Database Engine Types Setup (Local Target/Managed Databases)**
 
