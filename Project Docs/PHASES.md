@@ -224,7 +224,7 @@ To be defined in further detail as the owner directs. Implied by the phase name:
 #### Completion Criteria
 The real frontend renders a background visually matching the design canvas prototype's global background exactly, with no other UI chrome present yet.
 
-**Status: Not started.**
+**Status: Complete (2026-09-09).** Scaffolded the project's first real frontend — `frontend/` (Vite + React + TypeScript, per `ARCHITECTURE.md`'s locked stack), sibling to `backend/` at the repo root. The prototype's actual global background lives in `design/Main.dc.html`'s outermost `.app` container (the `master-admin-panel.html` file at the repo root is the Claude Design Canvas *editor's* own chrome/tooling wrapping that content, not the admin panel's design itself — its `--om-*`/Tailwind tokens belong to the canvas tool, not this project). That background is a flat color, no gradient/texture/image: `background: #1e1e1e`, `color: #cccccc`, `font-family: "Segoe UI", system-ui, -apple-system, sans-serif`, `font-size: 13px`, full viewport height, `overflow: hidden`. Vite's template boilerplate (counter demo, React/Vite logos, default `App.css`) was stripped entirely; `App.tsx` renders a single empty `.app-shell` div carrying exactly those styles via a plain `App.css` (no Tailwind or other CSS framework introduced — matches the prototype's own plain-`<style>` approach, and no CSS-tooling choice was locked in `ARCHITECTURE.md` yet). No sidebar, tabs, panels, or any other prototype UI chrome built. Verified via `tsc --noEmit` (clean) and the running Vite dev server (`npm run dev`, port 5173) — fetched the served `index.html` and the compiled `App.css` module directly to confirm the exact background/text-color/font values reached the browser, then opened it in a real browser for a visual check.
 
 **12b. Login Page (Static, Theme-Matched)**
 
@@ -242,7 +242,7 @@ A real, static login page exists in the frontend — designed fresh, visually co
 ### Completion Criteria
 Both Phase 12a and Phase 12b are complete — see each sub-phase's own completion criteria above.
 
-**Phase 12 overall status: Not started.**
+**Phase 12 overall status: In progress — 12a complete (2026-09-09), 12b not started.**
 
 ## Phase 13 — Base Global Structure (Integrating the Phase 12a Background)
 
