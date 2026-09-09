@@ -136,7 +136,7 @@ function AppShell() {
         </div>
         <div className="editor-col">
           <div className="tabbar">
-            <div className="tab active">
+            <div className="tab">
               <span className="doc-icon-sm">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                   <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
@@ -150,8 +150,75 @@ function AppShell() {
                 </svg>
               </button>
             </div>
+            <div className="tab active">
+              <span className="doc-icon-sm">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+              </span>
+              <span className="tab-label">SQL · Northwind Blog</span>
+              <button type="button" className="tab-close">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           </div>
-          {/* Phase 18/21/22: SQL console / editor pane / split panes */}
+          <div className="console-view">
+            <div className="console-toolbar">
+              <span className="breadcrumb">Northwind Blog&nbsp;&nbsp;›&nbsp;&nbsp;SQL Console</span>
+              <div className="console-toolbar-right">
+                <span className="console-hint">Ctrl Enter to run</span>
+                <button type="button" className="btn-save enabled">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 2.5v11l10-5.5-10-5.5z" fill="currentColor" />
+                  </svg>
+                  Run
+                </button>
+              </div>
+            </div>
+            <div className="console-tables">
+              <button type="button" className="table-chip">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+                posts
+                <span className="table-chip-count">3</span>
+              </button>
+              <button type="button" className="table-chip">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+                pages
+                <span className="table-chip-count">2</span>
+              </button>
+              <button type="button" className="table-chip">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+                authors
+                <span className="table-chip-count">2</span>
+              </button>
+            </div>
+            <textarea
+              className="console-input mono"
+              spellCheck={false}
+              readOnly
+              defaultValue="SELECT * FROM posts LIMIT 50;"
+            />
+            <div className="console-results">
+              <div className="console-placeholder">Run a query to see results here. Click a table above, or try SHOW TABLES;</div>
+            </div>
+          </div>
+          {/* Phase 21/22: editor pane / split panes */}
         </div>
       </div>
 
