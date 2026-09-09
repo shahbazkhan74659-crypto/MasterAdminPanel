@@ -10,6 +10,8 @@
   flex-direction: column;
 }
 
+.mono { font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace; }
+
 /* Titlebar */
 .titlebar {
   height: 36px;
@@ -65,12 +67,47 @@
 .activity-item:hover .avatar-add { color: #ffffff; }
 .activity-spacer { flex: 1; }
 
-/* Sidebar (empty shell — Phase 16 fills in header + tree) */
+/* Sidebar */
 .sidebar {
   width: 250px; min-width: 250px; background: #252526;
   border-right: 1px solid #1a1a1a; display: flex; flex-direction: column;
   min-height: 0;
 }
+.sidebar-header {
+  padding: 10px 8px 2px 14px; display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-header-title {
+  font-size: 11px; font-weight: 700; color: #cccccc; text-transform: uppercase; letter-spacing: .6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.icon-btn {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 22px; height: 22px; border-radius: 4px; border: none;
+  background: transparent; color: #9d9d9d; cursor: pointer;
+}
+.icon-btn:hover { background: #3c3c3c; color: #ffffff; }
+.sidebar-endpoint {
+  padding: 0 14px 10px; font-size: 11px; color: #7d7d7d;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tree { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+.tree::-webkit-scrollbar { width: 10px; }
+.tree::-webkit-scrollbar-thumb { background: #3e3e42; border-radius: 5px; }
+.tree-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; cursor: pointer; color: #cccccc;
+  white-space: nowrap;
+}
+.tree-row:hover { background: #2a2d2e; }
+.tree-row.active { background: #37373d; color: #ffffff; }
+.tree-collection { font-weight: 500; color: #d6d6d6; }
+.chevron-wrap { display: flex; color: #9d9d9d; transition: transform .12s ease; }
+.chevron-wrap.open { transform: rotate(90deg); }
+.folder-icon { display: flex; color: #c09553; flex-shrink: 0; }
+.doc-icon { display: flex; color: #9d9d9d; flex-shrink: 0; margin-left: 16px; }
+.tree-label { flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+.tree-count { color: #7d7d7d; font-size: 11px; }
+.tree-children { display: flex; flex-direction: column; }
 
 /* Editor column (empty shell — Phases 17/18/21/22 fill in tabs/console/editor/split) */
 .editor-col { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #1e1e1e; }

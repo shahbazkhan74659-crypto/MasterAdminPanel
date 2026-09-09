@@ -42,7 +42,98 @@ function AppShell() {
             </span>
           </div>
         </div>
-        <div className="sidebar">{/* Phase 16: sidebar header + tree */}</div>
+        <div className="sidebar">
+          <div className="sidebar-header">
+            <span className="sidebar-header-title">Northwind Blog</span>
+            <button type="button" className="icon-btn" title="Open SQL Console">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
+                <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
+                <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
+              </svg>
+            </button>
+          </div>
+          <div className="sidebar-endpoint mono">https://northwind-blog.example.com/api/admin</div>
+          <div className="tree">
+            <div className="tree-group">
+              <div className="tree-row tree-collection">
+                <span className="chevron-wrap open">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="folder-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="tree-label">Posts</span>
+                <span className="tree-count">3</span>
+              </div>
+              <div className="tree-children">
+                <div className="tree-row tree-record active">
+                  <span className="doc-icon">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                      <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="tree-label">Launching Our New Storefront</span>
+                </div>
+                <div className="tree-row tree-record">
+                  <span className="doc-icon">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                      <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="tree-label">Five Tips for Faster Onboarding</span>
+                </div>
+                <div className="tree-row tree-record">
+                  <span className="doc-icon">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                      <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="tree-label">Q3 Roadmap Recap</span>
+                </div>
+              </div>
+            </div>
+            <div className="tree-group">
+              <div className="tree-row tree-collection">
+                <span className="chevron-wrap">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="folder-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="tree-label">Pages</span>
+                <span className="tree-count">2</span>
+              </div>
+            </div>
+            <div className="tree-group">
+              <div className="tree-row tree-collection">
+                <span className="chevron-wrap">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="folder-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="tree-label">Authors</span>
+                <span className="tree-count">2</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="editor-col">{/* Phases 17/18/21/22: tabs / SQL console / editor pane / split panes */}</div>
       </div>
 
