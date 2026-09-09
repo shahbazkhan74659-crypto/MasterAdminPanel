@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { isWriteStatement, hasMultipleStatements } from "./classify.js";
+import { isWriteBlockedByPolicy } from "./policy.js";
 import { pgPool, remoteSites } from "./connections.js";
 import {
   runPostgresQuery,
@@ -10,6 +11,35 @@ import {
   listSqliteTables,
   type QueryResult,
 } from "./adapters.js";
+
+interface GatedResponse {
+  status: number;
+  body: { ok: boolean; error?: string } & Partial<QueryResult>;
+}
+
+/**
+ * Shared gate for both query routes below (local engines and Phase 7 remote sites):
+ * reject multiple statements, block writes to a policy-protected table outright
+ * (Phase 8, regardless of confirm), require confirm:true for any other write, then
+ * run the query. One choke point so the policy applies identically everywhere.
+ */
+async function gatedQuery(sql: string, confirm: unknown, run: () => Promise<QueryResult>): Promise<GatedResponse> {
+  if (hasMultipleStatements(sql)) {
+    return { status: 400, body: { ok: false, error: "multiple statements are not supported" } };
+  }
+
+  if (isWriteStatement(sql)) {
+    if (isWriteBlockedByPolicy(sql)) {
+      return { status: 403, body: { ok: false, error: "Writes to this table are blocked by policy" } };
+    }
+    if (confirm !== true) {
+      return { status: 409, body: { ok: false, error: "Non-SELECT statement requires confirm:true" } };
+    }
+  }
+
+  const result = await run();
+  return { status: 200, body: { ok: true, ...result } };
+}
 
 const ALLOWED_ENGINES = ["postgres", "mysql", "sqlite"] as const;
 type Engine = (typeof ALLOWED_ENGINES)[number];
@@ -70,19 +100,9 @@ sqlConsoleRoutes.post("/:engine/query", async (req, res) => {
     return;
   }
 
-  if (hasMultipleStatements(sql)) {
-    res.status(400).json({ ok: false, error: "multiple statements are not supported" });
-    return;
-  }
-
-  if (isWriteStatement(sql) && confirm !== true) {
-    res.status(409).json({ ok: false, error: "Non-SELECT statement requires confirm:true" });
-    return;
-  }
-
   try {
-    const result = await runQuery(engine, sql);
-    res.json({ ok: true, ...result });
+    const { status, body } = await gatedQuery(sql, confirm, () => runQuery(engine, sql));
+    res.status(status).json(body);
   } catch (error) {
     res.status(500).json({ ok: false, error: String(error) });
   }
@@ -122,19 +142,9 @@ sqlConsoleRoutes.post("/sites/:siteId/query", async (req, res) => {
     return;
   }
 
-  if (hasMultipleStatements(sql)) {
-    res.status(400).json({ ok: false, error: "multiple statements are not supported" });
-    return;
-  }
-
-  if (isWriteStatement(sql) && confirm !== true) {
-    res.status(409).json({ ok: false, error: "Non-SELECT statement requires confirm:true" });
-    return;
-  }
-
   try {
-    const result = await runPostgresQuery(site.pool, sql);
-    res.json({ ok: true, ...result });
+    const { status, body } = await gatedQuery(sql, confirm, () => runPostgresQuery(site.pool, sql));
+    res.status(status).json(body);
   } catch (error) {
     res.status(500).json({ ok: false, error: String(error) });
   }
