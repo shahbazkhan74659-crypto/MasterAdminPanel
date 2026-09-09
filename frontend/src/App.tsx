@@ -1,7 +1,7 @@
-import './App.css'
+import AppShell from './AppShell'
 
 function App() {
-  return <div className="app-shell" />
+  return <AppShell />
 }
 
 export default App

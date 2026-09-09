@@ -257,6 +257,15 @@ These decisions were made during prior planning discussions, before any producti
 - Reasoning: Owner's explicit, direct instruction ("Always use this Pattern, unique URL for each Page"). A real router hasn't been chosen and shouldn't be decided unprompted just to solve this — a plain pathname check is the minimal mechanism that satisfies "each page independently viewable" without pulling in routing-library architecture this project isn't ready to commit to yet.
 - Consequences: `ARCHITECTURE.md`'s Routing section now documents this as the actual implemented interim mechanism. If/when a real router is chosen (still genuinely open — see below), this pattern should migrate to real routes rather than being kept as permanent scaffolding. Every subsequent static-page phase (13–22) should add its own `pathname` branch in `main.tsx` following this same shape.
 
+## Decision: Phase 13 builds the titlebar for real (not another empty shell), via a base-layout component
+
+- Status: Accepted
+- Date: 2026-09-09
+- Context: [Phase 13]'s own scope text names six pieces staying out of scope — "activity bar/explorer/tabs/editor pane/command palette/status bar" — as things later phases (15–22) build into the base structure this phase creates. The titlebar (app icon/name, breadcrumb slot, Ctrl K button) is not in that list, and no Phase 14–22 entry claims it either — a real gap in the otherwise-locked roadmap's phase assignments. The owner also asked for the base structure to work like Django's `base.html`: one shared layout file/template that later pieces slot into, rather than something rebuilt piecemeal.
+- Decision: Phase 13 builds the titlebar for real now — not as another empty shell awaiting a later phase — since it genuinely has no dedicated phase of its own. The base layout itself lives in a new `frontend/src/AppShell.tsx`/`AppShell.css`, with `App.tsx` (the page actually mounted at `/`) simply rendering `<AppShell />` — mirroring `base.html`'s role as a template distinct from a page/view, per the owner's direct framing.
+- Reasoning: Owner's direct confirmation when asked (the alternative — leaving the titlebar empty pending some not-yet-defined future phase — was offered and declined). Building it now closes a real ambiguity in the locked phase text rather than leaving a UI element with no assigned home.
+- Consequences: `.activitybar`/`.sidebar`/`.editor-col`/`.statusbar` remain empty shells (correct dimensions/colors/borders, no content) for Phases 15/16/17-18-21-22/20 respectively to fill in, each marked with a comment naming its phase. If a future static-UI phase is added or resequenced, check whether it assumes the titlebar is still unbuilt — it isn't, as of this phase.
+
 ## Open decisions (not yet made)
 
 Carried forward from the original design record — do not treat any of these as settled:
