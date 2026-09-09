@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { testRoutes } from "./testRoutes.js";
 import { authRoutes } from "./auth/authRoutes.js";
 import { sqlConsoleRoutes } from "./sqlConsole/sqlConsoleRoutes.js";
+import { dataRoutes } from "./dataManagement/dataRoutes.js";
 import { pool } from "./db/pool.js";
 import { ensureSchema } from "./db/schema.js";
 
@@ -19,6 +20,7 @@ const port = process.env.PORT ?? 3001;
 app.use(express.json());
 
 app.use(express.static(path.resolve(fileURLToPath(new URL("../public", import.meta.url)))));
+app.use("/media", express.static(path.resolve(fileURLToPath(new URL("../media", import.meta.url)))));
 
 app.use(
   session({
@@ -47,6 +49,7 @@ app.get("/health", (_req, res) => {
 app.use("/test-api", testRoutes);
 app.use("/auth-api", authRoutes);
 app.use("/sql-console-api", sqlConsoleRoutes);
+app.use("/data-api", dataRoutes);
 
 async function bootstrap() {
   await ensureSchema();

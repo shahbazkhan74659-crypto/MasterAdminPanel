@@ -43,6 +43,39 @@
 <button onclick="runQuery()">Run Query</button>
 <pre id="sqlResult">query: (not run yet)</pre>
 
+<h1>Phase 6 — data management test</h1>
+
+<select id="dmEngine">
+  <option value="postgres">postgres</option>
+  <option value="mysql">mysql</option>
+  <option value="sqlite">sqlite</option>
+</select>
+<input id="dmCollection" placeholder="collection">
+<button onclick="dmListCollections()">List Collections</button>
+<button onclick="dmGetSchema()">Get Schema</button>
+<button onclick="dmListRecords()">List Records</button>
+<pre id="dmCollections">collections: (not run yet)</pre>
+<pre id="dmSchema">schema: (not run yet)</pre>
+<pre id="dmRecords">records: (not run yet)</pre>
+
+<br>
+<input id="dmId" placeholder="id">
+<button onclick="dmGetRecord()">Get Record</button>
+<button onclick="dmDeleteRecord()">Delete Record</button>
+<pre id="dmRecord">record: (not run yet)</pre>
+
+<br>
+<textarea id="dmValues" rows="3" cols="60">{"title": "hello"}</textarea><br>
+<button onclick="dmCreateRecord()">Create Record</button>
+<button onclick="dmUpdateRecord()">Update Record (uses id above)</button>
+<pre id="dmWrite">write: (not run yet)</pre>
+
+<br>
+<input id="dmUploadField" placeholder="field name (e.g. cover_image)">
+<input id="dmUploadFile" type="file">
+<button onclick="dmUploadFile()">Upload File (uses id above)</button>
+<pre id="dmUpload">upload: (not run yet)</pre>
+
 <script>
 async function test(engine) {
   const el = document.getElementById(engine);
@@ -128,6 +161,130 @@ async function runQuery() {
     el.textContent = "query: " + res.status + " " + JSON.stringify(data, null, 2);
   } catch (err) {
     el.textContent = "query: fetch failed - " + err;
+  }
+}
+
+function dmBase() {
+  const engine = document.getElementById("dmEngine").value;
+  const collection = document.getElementById("dmCollection").value;
+  return `/data-api/${engine}/${collection}`;
+}
+
+async function dmListCollections() {
+  const engine = document.getElementById("dmEngine").value;
+  const el = document.getElementById("dmCollections");
+  el.textContent = "collections: running...";
+  try {
+    const res = await fetch(`/data-api/${engine}/collections`);
+    const data = await res.json();
+    el.textContent = "collections: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "collections: fetch failed - " + err;
+  }
+}
+
+async function dmGetSchema() {
+  const el = document.getElementById("dmSchema");
+  el.textContent = "schema: running...";
+  try {
+    const res = await fetch(`${dmBase()}/schema`);
+    const data = await res.json();
+    el.textContent = "schema: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "schema: fetch failed - " + err;
+  }
+}
+
+async function dmListRecords() {
+  const el = document.getElementById("dmRecords");
+  el.textContent = "records: running...";
+  try {
+    const res = await fetch(`${dmBase()}/records`);
+    const data = await res.json();
+    el.textContent = "records: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "records: fetch failed - " + err;
+  }
+}
+
+async function dmGetRecord() {
+  const id = document.getElementById("dmId").value;
+  const el = document.getElementById("dmRecord");
+  el.textContent = "record: running...";
+  try {
+    const res = await fetch(`${dmBase()}/records/${id}`);
+    const data = await res.json();
+    el.textContent = "record: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "record: fetch failed - " + err;
+  }
+}
+
+async function dmDeleteRecord() {
+  const id = document.getElementById("dmId").value;
+  const el = document.getElementById("dmRecord");
+  el.textContent = "record: running...";
+  try {
+    const res = await fetch(`${dmBase()}/records/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    el.textContent = "record: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "record: fetch failed - " + err;
+  }
+}
+
+async function dmCreateRecord() {
+  const el = document.getElementById("dmWrite");
+  el.textContent = "write: running...";
+  try {
+    const values = JSON.parse(document.getElementById("dmValues").value);
+    const res = await fetch(`${dmBase()}/records`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ values }),
+    });
+    const data = await res.json();
+    el.textContent = "write: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "write: fetch failed - " + err;
+  }
+}
+
+async function dmUpdateRecord() {
+  const id = document.getElementById("dmId").value;
+  const el = document.getElementById("dmWrite");
+  el.textContent = "write: running...";
+  try {
+    const values = JSON.parse(document.getElementById("dmValues").value);
+    const res = await fetch(`${dmBase()}/records/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ values }),
+    });
+    const data = await res.json();
+    el.textContent = "write: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "write: fetch failed - " + err;
+  }
+}
+
+async function dmUploadFile() {
+  const id = document.getElementById("dmId").value;
+  const field = document.getElementById("dmUploadField").value;
+  const file = document.getElementById("dmUploadFile").files[0];
+  const el = document.getElementById("dmUpload");
+  el.textContent = "upload: running...";
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${dmBase()}/records/${id}/upload/${field}`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    el.textContent = "upload: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "upload: fetch failed - " + err;
   }
 }
 </script>
