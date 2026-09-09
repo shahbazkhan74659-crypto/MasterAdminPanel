@@ -126,12 +126,26 @@ These decisions were made during prior planning discussions, before any producti
 - Reasoning: Validates the UI/interaction design against the locked product concept before real implementation effort begins.
 - Consequences: This prototype is a design/validation reference only, the same way Portfolio's `prototype/index.html` was a styling reference only for that project — it is not expected to be ported into or reused as production code. No decision has been recorded either way on reuse, since production implementation hasn't started; treat "prototype is reference only, not to be ported" as the working assumption unless the owner says otherwise when implementation begins.
 
+## Decision: Login mechanics — server-side session cookie, bcrypt hashing, Postgres-backed storage
+
+- Status: Accepted
+- Date: 2026-09-09
+- Context: The "Single-user login" decision above committed to building a login flow but explicitly left its mechanics open: session vs. token auth, password hashing, and where the owner account's credentials live. [Phase 4] "Login Auth Engine/Flow" was scoped to resolve all three.
+- Decision:
+  - **Auth mechanism**: server-side session via an httpOnly cookie (`express-session`), not a JWT/token.
+  - **Password hashing**: bcrypt-format hashing via the `bcryptjs` package (pure JS, produces standard `$2a$`/`$2b$` hashes — same format as native `bcrypt`, chosen to avoid Windows native-build friction; no perf concern at single-user, occasional-login scale).
+  - **Credential storage**: a new `users` table in Phase 1a's `adminpanel_app` Postgres database — the local database already provisioned specifically for the panel's own data. Schema created via a plain `CREATE TABLE IF NOT EXISTS` run at server startup (`backend/src/db/schema.ts`); no migration framework introduced for one table.
+  - **Session storage**: sessions are also persisted in `adminpanel_app` (via `connect-pg-simple`, its own auto-created `session` table), not in-memory — chosen so logins survive `tsx watch`'s dev-time restarts and Render's eventual free-tier cold starts (Phase 29).
+  - **Account creation/reset**: a one-off CLI script (`backend/src/scripts/seedOwner.ts`, run as `npm run seed:owner -- <username> <password>`) is the only way the account gets created or its password changed. No signup flow exists or is planned — consistent with the project's single-owner, no-multi-account scope.
+- Reasoning: Owner's direct choices, aligned with the project's stated non-goals (single operator, no multi-account system) and with reusing infrastructure already committed to (Phase 1a's Postgres) rather than introducing new storage just for auth.
+- Consequences: `backend/src/index.ts` gained `express.json()` and `express-session` middleware; a shared `pg.Pool` module (`backend/src/db/pool.ts`) now exists, scoped only to `adminpanel_app` — a new pattern distinct from `testRoutes.ts`'s per-request connections to the Phase 1b target databases, which remain unchanged. No existing route (e.g. `/test-api/*`) was gated behind auth by this decision — per the roadmap, real route-gating is Phase 23's job, once a real UI exists to protect. Production HTTPS deployment (Phase 29) will need `cookie.secure: true` and `app.set("trust proxy", 1)` (Render terminates TLS at a proxy) — flagged in code as a comment, not solved yet. `SESSION_SECRET` was added to `.env.local` (already gitignored) as this app's own runtime config — distinct from [Phase 10]'s "secrets storage mechanism," which covers secrets for *managed sites*, not this app's own session-signing key.
+
 ## Open decisions (not yet made)
 
 Carried forward from the original design record — do not treat any of these as settled:
 
 - **Backend server framework/runtime**: Node.js is implied (to reuse `pg`/`mysql2`/`better-sqlite3`), but no specific framework (Express, Fastify, etc.) has been chosen for the browser-based backend — see "Browser-based web app" decision above. To be decided in [Phase 2] "Backend Server (Node.js)," see `PHASES.md`.
 - **Secrets storage (browser-based)**: `safeStorage` no longer applies now that the panel isn't Electron — how API keys/tokens and DB credentials get stored server-side (env vars, an encrypted server-side store, a secrets manager, etc.) is not yet decided. To be decided and built in [Phase 10] "Secrets Storage Mechanism," see `PHASES.md`.
-- **Login mechanics**: session vs. token auth, password storage/hashing, and where the single owner account's credentials live are not yet decided — see "Single-user login" decision above. To be decided in [Phase 4] "Login Auth Engine/Flow," see `PHASES.md`.
+- ~~**Login mechanics**: session vs. token auth, password storage/hashing, and where the single owner account's credentials live.~~ **Resolved 2026-09-09** — see the "Login mechanics" decision above.
 - **Versioning/history**: whether records get git-like diff/version history in the editor pane. **Not assigned to any phase** in the locked Phase 0–30 roadmap (see `PHASES.md`) — remains a genuinely open idea with no scheduled home; do not assume it will happen unless the owner adds a phase for it.
 - **SQL console write safety**: read-only-by-default vs. unrestricted, potentially scoped further (per-database/per-connection policy) — see the SQL console decision above. To be decided and enforced in [Phase 8] "SQL Console Access/Modification Policy" (backend/database only — the real UI is separately [Phase 18], static, wired up in [Phase 23]'s general wiring-up work), see `PHASES.md`.

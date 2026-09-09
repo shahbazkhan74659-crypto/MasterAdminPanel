@@ -15,6 +15,18 @@
 <pre id="mysql">mysql: (not run yet)</pre>
 <pre id="sqlite">sqlite: (not run yet)</pre>
 
+<h1>Phase 4 — login test</h1>
+
+<input id="username" placeholder="username">
+<input id="password" type="password" placeholder="password">
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+<button onclick="checkSession()">Check Session</button>
+
+<pre id="login">login: (not run yet)</pre>
+<pre id="logout">logout: (not run yet)</pre>
+<pre id="session">session: (not run yet)</pre>
+
 <script>
 async function test(engine) {
   const el = document.getElementById(engine);
@@ -25,6 +37,49 @@ async function test(engine) {
     el.textContent = engine + ": " + JSON.stringify(data, null, 2);
   } catch (err) {
     el.textContent = engine + ": fetch failed - " + err;
+  }
+}
+
+async function login() {
+  const el = document.getElementById("login");
+  el.textContent = "login: running...";
+  try {
+    const res = await fetch("/auth-api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+      }),
+    });
+    const data = await res.json();
+    el.textContent = "login: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "login: fetch failed - " + err;
+  }
+}
+
+async function logout() {
+  const el = document.getElementById("logout");
+  el.textContent = "logout: running...";
+  try {
+    const res = await fetch("/auth-api/logout", { method: "POST" });
+    const data = await res.json();
+    el.textContent = "logout: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "logout: fetch failed - " + err;
+  }
+}
+
+async function checkSession() {
+  const el = document.getElementById("session");
+  el.textContent = "session: running...";
+  try {
+    const res = await fetch("/auth-api/me");
+    const data = await res.json();
+    el.textContent = "session: " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "session: fetch failed - " + err;
   }
 }
 </script>
