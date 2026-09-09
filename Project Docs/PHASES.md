@@ -268,7 +268,7 @@ To be defined in further detail as the owner directs, including confirming exact
 ### Completion Criteria
 The real frontend serves a favicon that matches the design canvas prototype exactly.
 
-**Status: Not started.**
+**Status: Complete (2026-09-09).** Owner's direct clarification (referencing a screenshot of the running app): the favicon is the same icon shown in `AppShell.tsx`'s titlebar, top-left — `.app-icon`, two overlapping 16×16 rounded squares (one stroke-only, one filled), already present verbatim in both the real frontend and the prototype (`design/Main.dc.html`'s own `.app-icon` markup/CSS, `color: #3794ff`). Replaced `frontend/public/favicon.svg` (previously an unrelated, never-customized Vite template placeholder) with that exact icon — `currentColor` hardcoded to `#3794ff` since a standalone favicon file has no surrounding CSS to inherit from, transparent background, no tile added (owner's direct choice: a literal 1:1 match to the prototype's icon, nothing extra). `frontend/index.html`'s existing `<link rel="icon">` and `<title>` needed no changes. Verified in a real browser: `frontend/public/favicon.svg` served directly renders identically to the titlebar `.app-icon` seen in the running app.
 
 ## Phase 15 — Activity Bar (Static, Matching the Prototype)
 

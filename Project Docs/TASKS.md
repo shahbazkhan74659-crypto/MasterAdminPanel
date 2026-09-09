@@ -2,11 +2,11 @@
 
 ## Active
 
-[Phase 14] "Favicon Icon (Matching the Prototype)" — not yet started. [Phase 13] "Base Global Structure" is now complete (see Completed below), alongside [Phase 11], [Phase 12a], and [Phase 12b]. See `PHASES.md` for Phase 14's full objective/scope/completion criteria.
+None. [Phase 14] "Favicon Icon (Matching the Prototype)" is now complete (see Completed below), alongside [Phase 11], [Phase 12a], [Phase 12b], and [Phase 13].
 
 ## Next
 
-The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 14 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
+The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — [Phase 15] is next up now that Phase 14 is complete. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
 - Whether records get git-like diff/version history in the editor pane — **not assigned to any phase** in the locked roadmap; a genuinely open idea with no scheduled home.
 - A real, remotely-implementable version of the Content Admin API (per-site auth/API keys, search, media listing, and an actual HTTP call to a separate site's own backend) — **not assigned to any phase**; [Phase 9]'s spec documents AdminPanel's own internal `/data-api` contract only, not this. See `DECISIONS.md`'s Phase 9 entry.
 - **For [Phase 23]** (owner's direct instruction, 2026-09-09, given during [Phase 12b]): when the login page gets wired to the real `POST /auth-api/login`, reuse [Phase 12b]'s `frontend/src/loginSchema.ts` Zod schema server-side too (never trust client-only validation), and add rate limiting on that route. Not yet implemented — `PHASES.md`'s own Phase 23 text hasn't been edited to add this, per the phase-lock rule; recorded here and in `DECISIONS.md` instead so it isn't lost.
@@ -40,6 +40,7 @@ None.
 
 ## Completed
 
+- [x] [Phase 14] Completed — 2026-09-09. Owner's direct clarification: the favicon is the same icon shown in the titlebar's top-left `.app-icon` (two overlapping 16×16 rounded squares, `#3794ff`), already present verbatim in both `frontend/src/AppShell.tsx` and the prototype's `design/Main.dc.html`. Replaced `frontend/public/favicon.svg` (an unrelated, never-customized Vite template placeholder) with that exact icon — `currentColor` hardcoded to `#3794ff`, transparent background, no added tile (owner's direct choice: a literal match, nothing extra). `frontend/index.html` needed no changes. Verified in a real browser against the running app's titlebar icon. See `PHASES.md`'s Phase 14 entry.
 - [x] [Phase 0a] Defined the core product concept: one reusable, personal admin panel driven by a shared Content Admin API protocol, instead of a bespoke UI per site — see `PROJECT.md`, `DECISIONS.md`.
 - [x] [Phase 0a] Mapped the VS Code-metaphor UI (activity bar, explorer tree, editor tabs, command palette, status bar, split panes) onto the panel's intended interaction model — see `PROJECT.md`, `DECISIONS.md`.
 - [x] [Phase 0a] Identified schema-driven forms as the load-bearing design decision, and scoped the SQL console as a deliberate, separate exception to the schema-driven CRUD path — see `DECISIONS.md`.
