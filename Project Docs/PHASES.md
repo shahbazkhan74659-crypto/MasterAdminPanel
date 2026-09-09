@@ -208,36 +208,59 @@ A real end-to-end pass exercises every backend piece built in Phases 2–10 agai
 
 **Status: Not started.**
 
-## Phase 12 — Global Background Matching the Prototype (Background Only)
+## Phase 12 — Global Background & Login Page (Both Static, Before Any Real Structure Exists)
 
 ### Objective
-Implement, in the real frontend (React/TypeScript/Vite, per `ARCHITECTURE.md`), the exact global background from the design canvas prototype (`design/master-admin-panel.html`) — and only the background, not the rest of the VS Code-metaphor UI (activity bar, explorer, tabs, editor pane, command palette, status bar all remain unbuilt). This is the first real-frontend phase in the roadmap — everything from Phase 4 through Phase 11 was backend-only or backend-plus-test-page per the standing convention.
+Build the first two real-frontend pieces (React/TypeScript/Vite, per `ARCHITECTURE.md`) as standalone static pieces, before Phase 13's base structure exists: the global background (12a) and the login page (12b). These are the first real-frontend phases in the roadmap — everything from Phase 4 through Phase 11 was backend-only or backend-plus-test-page per the standing convention. **Split into 12a/12b on 2026-09-09 (Admin's direct command)** — the original single Phase 12 only covered the background; 12b is new, giving the login page its own scoped phase, kept explicitly separate from Phase 13's base structure rather than folded into it.
 
-### Scope
+**12a. Global Background Matching the Prototype (Background Only)**
+
+#### Objective
+Implement the exact global background from the design canvas prototype (`design/master-admin-panel.html`) — and only the background, not the rest of the VS Code-metaphor UI (activity bar, explorer, tabs, editor pane, command palette, status bar all remain unbuilt).
+
+#### Scope
 To be defined in further detail as the owner directs. Implied by the phase name: a real React/Vite project (if it doesn't already exist from earlier phases) rendering just the app shell's global background — color/gradient/texture/theme tokens — matching the prototype pixel-for-pixel, with no other prototype UI element (sidebar, tabs, panels, etc.) built yet. Narrowly scoped on purpose — do not expand this phase into building other UI pieces just because the frontend project now exists.
 
-### Completion Criteria
+#### Completion Criteria
 The real frontend renders a background visually matching the design canvas prototype's global background exactly, with no other UI chrome present yet.
 
 **Status: Not started.**
 
-## Phase 13 — Base Global Structure (Integrating the Phase 12 Background)
+**12b. Login Page (Static, Theme-Matched)**
 
-### Objective
-Build the base global structure of the real frontend — the root app-shell/layout scaffold that every later UI piece (activity bar, explorer, tabs, editor pane, command palette, status bar) will mount into — and **integrate Phase 12's global background into it**. The background was deliberately built standalone/separately in Phase 12 (before any real structure existed); this phase is where it gets folded into the actual base layout rather than staying a lone, unstructured page.
+#### Objective
+Build the login page as a standalone static frontend piece — the page a user sees before authenticating, gating the rest of the panel (Phase 4 already built the real backend it will eventually call: `POST /auth-api/login`). The design canvas prototype predates the browser-based pivot that introduced the login requirement (see `DECISIONS.md`) and has no login screen in it — there is nothing to pixel-match here, unlike 12a and Phases 13–22. **Per the owner's direct decision (2026-09-09): the login page's visual design is created fresh as part of this phase's own scope**, using the same VS Code-metaphor visual theme (colors/typography/style tokens) as the rest of the prototype, not a pre-existing mockup.
 
-### Scope
-To be defined in further detail as the owner directs. Implied by the phase name: a real root layout component (or equivalent) establishing the app's overall structural skeleton, with the Phase 12 background now living inside it as the base layer, not as a separate standalone piece. This phase does not yet build the activity bar/explorer/tabs/editor pane/command palette/status bar themselves — only the structural scaffold they'll eventually occupy. **The base structure must match the design canvas prototype (`design/master-admin-panel.html`) exactly** — same standard this phase holds itself to as Phase 12 held the background to; this is not a loose approximation, but a pixel-accurate structural match to what's already locked in the prototype.
+#### Scope
+To be defined in further detail as the owner directs. Implied by the phase name: a real, standalone static login page (username/password fields, a submit control) visually consistent with the prototype's theme — designed fresh within this phase since no prior mockup exists, per the objective above. No real backend wiring yet: Phase 4's `/auth-api/login` endpoint exists but is not called from this page in this phase, matching the "static first, wire later" pattern already used for Phases 15–22. **Explicitly not in scope**: real form submission, session handling, redirect-on-success/failure logic, or mounting inside Phase 13's base global structure — this page stays a standalone piece, kept deliberately separate from Phase 13 rather than integrated into it (unlike Phase 12a's background, which Phase 13 does fold in).
+
+#### Completion Criteria
+A real, static login page exists in the frontend — designed fresh, visually consistent with the prototype's theme, with username/password fields and a submit control — kept as a standalone page separate from Phase 13's base structure, with no backend wiring of any kind.
+
+**Status: Not started.**
 
 ### Completion Criteria
-A real base global structure exists in the frontend, with the Phase 12 background integrated into it (no longer standalone), providing a scaffold ready for later UI pieces to be added into — without yet building those pieces — and matching the design canvas prototype's structure exactly, not just approximately.
+Both Phase 12a and Phase 12b are complete — see each sub-phase's own completion criteria above.
+
+**Phase 12 overall status: Not started.**
+
+## Phase 13 — Base Global Structure (Integrating the Phase 12a Background)
+
+### Objective
+Build the base global structure of the real frontend — the root app-shell/layout scaffold that every later UI piece (activity bar, explorer, tabs, editor pane, command palette, status bar) will mount into — and **integrate Phase 12a's global background into it**. The background was deliberately built standalone/separately in Phase 12a (before any real structure existed); this phase is where it gets folded into the actual base layout rather than staying a lone, unstructured page. Phase 12b's login page is explicitly *not* folded in here — it stays a separate, standalone page (see Phase 12b's scope).
+
+### Scope
+To be defined in further detail as the owner directs. Implied by the phase name: a real root layout component (or equivalent) establishing the app's overall structural skeleton, with the Phase 12a background now living inside it as the base layer, not as a separate standalone piece. This phase does not yet build the activity bar/explorer/tabs/editor pane/command palette/status bar themselves — only the structural scaffold they'll eventually occupy — and does not include Phase 12b's login page, which stays standalone. **The base structure must match the design canvas prototype (`design/master-admin-panel.html`) exactly** — same standard this phase holds itself to as Phase 12a held the background to; this is not a loose approximation, but a pixel-accurate structural match to what's already locked in the prototype.
+
+### Completion Criteria
+A real base global structure exists in the frontend, with the Phase 12a background integrated into it (no longer standalone), providing a scaffold ready for later UI pieces to be added into — without yet building those pieces — and matching the design canvas prototype's structure exactly, not just approximately. Phase 12b's login page remains a separate, standalone page, not part of this structure.
 
 **Status: Not started.**
 
 ## Phase 14 — Favicon Icon (Matching the Prototype)
 
 ### Objective
-Add the real frontend's favicon, matching the design canvas prototype (`design/master-admin-panel.html`) exactly — same "match the prototype precisely" standard Phase 12 (background) and Phase 13 (base structure) already held themselves to.
+Add the real frontend's favicon, matching the design canvas prototype (`design/master-admin-panel.html`) exactly — same "match the prototype precisely" standard Phase 12a (background) and Phase 13 (base structure) already held themselves to.
 
 ### Scope
 To be defined in further detail as the owner directs, including confirming exactly what icon/asset the prototype actually uses or implies for this (verify against the prototype file itself rather than assuming) before implementing it as the real favicon.
@@ -253,7 +276,7 @@ The real frontend serves a favicon that matches the design canvas prototype exac
 Build the activity bar UI element (per `PROJECT.md`'s VS Code element mapping — switches between connected sites/workspaces or modules), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 2 backend server, Phase 4 login, or any real database.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/14): the activity bar's visual appearance and structure, built into the Phase 13 base global structure, with static/placeholder content (e.g. hardcoded icons/items) rather than real data. **Explicitly not in scope for this phase**: any backend or database connection — switching sites/modules for real, real site/workspace data, or any live state. That is deferred to a later phase.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/14): the activity bar's visual appearance and structure, built into the Phase 13 base global structure, with static/placeholder content (e.g. hardcoded icons/items) rather than real data. **Explicitly not in scope for this phase**: any backend or database connection — switching sites/modules for real, real site/workspace data, or any live state. That is deferred to a later phase.
 
 ### Completion Criteria
 The real frontend renders an activity bar visually and structurally matching the design canvas prototype exactly, using static placeholder content — with no backend or database connection of any kind.
@@ -266,7 +289,7 @@ The real frontend renders an activity bar visually and structurally matching the
 Build the explorer sidebar UI element (per `PROJECT.md`'s VS Code element mapping — the current site's collections/records tree), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 2 backend server, Phase 6 data management engine, Phase 7 Content Admin API, or any real database.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/14/15): the explorer sidebar's visual appearance and structure (tree layout, expand/collapse, icons, etc.), built into the Phase 13 base global structure alongside the Phase 15 activity bar, with static/placeholder tree content rather than real collections/records. **Explicitly not in scope for this phase**: any backend or database connection — real collections, real records, or any live state. That is deferred to a later phase.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/14/15): the explorer sidebar's visual appearance and structure (tree layout, expand/collapse, icons, etc.), built into the Phase 13 base global structure alongside the Phase 15 activity bar, with static/placeholder tree content rather than real collections/records. **Explicitly not in scope for this phase**: any backend or database connection — real collections, real records, or any live state. That is deferred to a later phase.
 
 ### Completion Criteria
 The real frontend renders an explorer sidebar visually and structurally matching the design canvas prototype exactly, using static placeholder tree content — with no backend or database connection of any kind.
@@ -279,7 +302,7 @@ The real frontend renders an explorer sidebar visually and structurally matching
 Build the editor tabs UI element (per `PROJECT.md`'s VS Code element mapping — open records, each with an unsaved-changes dot), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 2 backend server, Phase 6 data management engine, Phase 7 Content Admin API, or any real database.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/14/15/16): the editor tabs' visual appearance and structure (tab strip, active/inactive state, close button, unsaved-changes dot, etc.), built into the Phase 13 base global structure alongside the Phase 15 activity bar and Phase 16 explorer sidebar, with static/placeholder tab content rather than real open records. **Explicitly not in scope for this phase**: any backend or database connection — real open records, real unsaved-state tracking, or any live state. That is deferred to a later phase.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/14/15/16): the editor tabs' visual appearance and structure (tab strip, active/inactive state, close button, unsaved-changes dot, etc.), built into the Phase 13 base global structure alongside the Phase 15 activity bar and Phase 16 explorer sidebar, with static/placeholder tab content rather than real open records. **Explicitly not in scope for this phase**: any backend or database connection — real open records, real unsaved-state tracking, or any live state. That is deferred to a later phase.
 
 ### Completion Criteria
 The real frontend renders editor tabs visually and structurally matching the design canvas prototype exactly, using static placeholder tab content — with no backend or database connection of any kind.
@@ -292,7 +315,7 @@ The real frontend renders editor tabs visually and structurally matching the des
 Build the SQL Console panel UI (per `PROJECT.md`'s design record — table chips, query input, result grid, styled after VS Code's database-extension UX), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 5 SQL console backend or any real database.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/15/16/17): the SQL Console panel's visual appearance and structure (table chips, query input box, result grid layout), built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder content rather than a real query/result flow. **Explicitly not in scope for this phase**: any backend or database connection — running real queries, real result data, or the Phase 8 access/modification policy. That remains deferred to wiring-up work.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/15/16/17): the SQL Console panel's visual appearance and structure (table chips, query input box, result grid layout), built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder content rather than a real query/result flow. **Explicitly not in scope for this phase**: any backend or database connection — running real queries, real result data, or the Phase 8 access/modification policy. That remains deferred to wiring-up work.
 
 ### Completion Criteria
 The real frontend renders an SQL Console panel visually and structurally matching the design canvas prototype exactly, using static placeholder content — with no backend or database connection of any kind.
@@ -307,7 +330,7 @@ The real frontend renders an SQL Console panel visually and structurally matchin
 Build the command palette UI element (per `PROJECT.md`'s VS Code element mapping — quick actions like "New Post," "Publish," "Switch Site," "Duplicate Record"), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 2 backend server or any real database, and not yet executing any real action.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/15/16/17/18): the command palette's visual appearance and structure (open/close trigger, search/filter input, listed commands), built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder commands rather than real, executable actions. **Explicitly not in scope for this phase**: any backend or database connection, or any command actually doing something. That remains deferred to wiring-up work.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/15/16/17/18): the command palette's visual appearance and structure (open/close trigger, search/filter input, listed commands), built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder commands rather than real, executable actions. **Explicitly not in scope for this phase**: any backend or database connection, or any command actually doing something. That remains deferred to wiring-up work.
 
 ### Completion Criteria
 The real frontend renders a command palette visually and structurally matching the design canvas prototype exactly, using static placeholder commands — with no backend or database connection, and no command performing a real action.
@@ -320,7 +343,7 @@ The real frontend renders a command palette visually and structurally matching t
 Build the status bar UI element (per `PROJECT.md`'s VS Code element mapping — connected site, environment, save/sync state), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 2 backend server, Phase 4 login, or any real database.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/15/16/17/18/19): the status bar's visual appearance and structure, built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder content rather than real connection/environment/save-state data. **Explicitly not in scope for this phase**: any backend or database connection — real connected-site info, real save/sync state, or any live state. That remains deferred to wiring-up work.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/15/16/17/18/19): the status bar's visual appearance and structure, built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder content rather than real connection/environment/save-state data. **Explicitly not in scope for this phase**: any backend or database connection — real connected-site info, real save/sync state, or any live state. That remains deferred to wiring-up work.
 
 ### Completion Criteria
 The real frontend renders a status bar visually and structurally matching the design canvas prototype exactly, using static placeholder content — with no backend or database connection of any kind.
@@ -333,7 +356,7 @@ The real frontend renders a status bar visually and structurally matching the de
 Build the editor pane UI element (per `PROJECT.md`'s VS Code element mapping — the content form for the open record; could reuse Monaco for raw JSON/HTML/code fields), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 6 data management engine, Phase 7 Content Admin API, or any real database, and no real Monaco integration yet.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/15/16/17/18/19/20): the editor pane's visual appearance and structure, built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder content rather than a real schema-driven form or live Monaco instance. **Includes the breadcrumb path shown above the form** (e.g. "Northwind Blog › Pages › Contact" — site/collection/record context), which is not separately named in `PROJECT.md`'s VS Code element mapping but is part of the editor pane's header, per the design canvas prototype — static/placeholder path text in this phase, real path data wired in Phase 23. **Explicitly not in scope for this phase**: any backend or database connection, real record data, real breadcrumb data, schema-driven field rendering, or Monaco wiring. That remains deferred to wiring-up work.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/15/16/17/18/19/20): the editor pane's visual appearance and structure, built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder content rather than a real schema-driven form or live Monaco instance. **Includes the breadcrumb path shown above the form** (e.g. "Northwind Blog › Pages › Contact" — site/collection/record context), which is not separately named in `PROJECT.md`'s VS Code element mapping but is part of the editor pane's header, per the design canvas prototype — static/placeholder path text in this phase, real path data wired in Phase 23. **Explicitly not in scope for this phase**: any backend or database connection, real record data, real breadcrumb data, schema-driven field rendering, or Monaco wiring. That remains deferred to wiring-up work.
 
 ### Completion Criteria
 The real frontend renders an editor pane — including its breadcrumb path — visually and structurally matching the design canvas prototype exactly, using static placeholder content — with no backend or database connection, real record/path data, or Monaco integration.
@@ -346,7 +369,7 @@ The real frontend renders an editor pane — including its breadcrumb path — v
 Build the split panes UI element (per `PROJECT.md`'s VS Code element mapping — compare two records, or the same record across environments), matching the design canvas prototype exactly, as a **static** piece: visual/structural only, not yet wired to the Phase 6 data management engine, Phase 7 Content Admin API, or any real database. This is the last VS Code element from `PROJECT.md`'s mapping table — every element (activity bar, explorer sidebar, editor tabs, editor pane, command palette, status bar, SQL Console panel, split panes) now has a static, prototype-matching phase.
 
 ### Scope
-To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12/13/15/16/17/18/19/20/21): the split-pane layout's visual appearance and structure (dividing the editor area, resizing behavior if shown in the prototype), built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder pane content rather than real, comparable records or environments. **Explicitly not in scope for this phase**: any backend or database connection, real record comparison, or real environment switching. That remains deferred to wiring-up work.
+To be defined in further detail as the owner directs. Implied by the phase name and the established "match the prototype exactly" standard (Phase 12a/13/15/16/17/18/19/20/21): the split-pane layout's visual appearance and structure (dividing the editor area, resizing behavior if shown in the prototype), built into the Phase 13 base global structure alongside the other static UI pieces, with static/placeholder pane content rather than real, comparable records or environments. **Explicitly not in scope for this phase**: any backend or database connection, real record comparison, or real environment switching. That remains deferred to wiring-up work.
 
 ### Completion Criteria
 The real frontend renders split panes visually and structurally matching the design canvas prototype exactly, using static placeholder content — with no backend or database connection of any kind.
@@ -356,7 +379,7 @@ The real frontend renders split panes visually and structurally matching the des
 ## Phase 23 — Wiring the Full Static UI to the Backend and Database
 
 ### Objective
-Connect every static UI piece built in Phases 12–22 (background, base structure, activity bar, explorer sidebar, editor tabs, SQL Console panel, command palette, status bar, editor pane, split panes) to the real backend and databases, replacing static/placeholder content with real, live data and real, working actions. This is the integration phase the standing convention (Phase 4–11: backend-only; Phase 12–22: static UI matching the prototype) has been building toward.
+Connect every static UI piece built in Phases 12–22 (background, login page, base structure, activity bar, explorer sidebar, editor tabs, SQL Console panel, command palette, status bar, editor pane, split panes) to the real backend and databases, replacing static/placeholder content with real, live data and real, working actions. This is the integration phase the standing convention (Phase 4–11: backend-only; Phase 12–22: static UI matching the prototype) has been building toward.
 
 ### Scope
 To be defined in further detail as the owner directs. Implied by the phase name, pulling together everything built so far:
@@ -368,7 +391,8 @@ To be defined in further detail as the owner directs. Implied by the phase name,
 - **Status bar** (Phase 20) — real connected-site/environment/save-sync state.
 - **Editor pane** (Phase 21) — real schema-driven forms sourced from Phase 6/7, real breadcrumb path data (site/collection/record), with only **minimal/basic** Monaco wiring for code/JSON fields and the SQL Console (enough to show it's real, not a placeholder) — full Monaco functionality is explicitly deferred to Phase 24, not this phase's job.
 - **Split panes** (Phase 22) — real record/environment comparison.
-- The whole UI also needs to sit behind the Phase 4 login gate for the first time, since every earlier UI phase was explicitly built without any auth wiring.
+- **Login page** (Phase 12b) — wired to Phase 4's `/auth-api/login`, with real form submission, error display, and redirect-on-success/failure — replacing Phase 3's throwaway test form as the real way to authenticate.
+- The whole UI also needs to sit behind the Phase 4 login gate for the first time, via the now-wired Phase 12b login page, since every earlier UI phase was explicitly built without any auth wiring.
 - State management (open tabs, active site, connections — per `ARCHITECTURE.md`'s Zustand decision) is **minimal/ad-hoc** in this phase, just enough to make the above wiring work — full, proper Zustand-based state management across the app is explicitly deferred to Phase 25, not this phase's job.
 
 Given the size of this phase, it may need to be broken down further once work actually starts — do not assume it stays a single undivided phase if the owner wants to split it.

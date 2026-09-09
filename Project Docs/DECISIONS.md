@@ -126,6 +126,15 @@ These decisions were made during prior planning discussions, before any producti
 - Reasoning: Validates the UI/interaction design against the locked product concept before real implementation effort begins.
 - Consequences: This prototype is a design/validation reference only, the same way Portfolio's `prototype/index.html` was a styling reference only for that project — it is not expected to be ported into or reused as production code. No decision has been recorded either way on reuse, since production implementation hasn't started; treat "prototype is reference only, not to be ported" as the working assumption unless the owner says otherwise when implementation begins.
 
+## Decision: Split Phase 12 into 12a (background) and 12b (login page); design the login page fresh, no prototype to match
+
+- Status: Accepted
+- Date: 2026-09-09
+- Context: The original Phase 12 covered only the global background. The owner wanted a login page built as its own static frontend phase, separate from Phase 13's base structure. But the design canvas prototype (`design/master-admin-panel.html`) was built before the browser-based pivot introduced the login requirement (see "Browser-based web app" and "Single-user login" decisions above) — it has no login screen at all, so there's nothing for a login-page phase to pixel-match, unlike every other static UI phase (12a, 13–22).
+- Decision: Split [Phase 12] into [Phase 12a] "Global Background Matching the Prototype" (unchanged scope) and [Phase 12b] "Login Page (Static, Theme-Matched)" (new). Phase 12b's visual design is created fresh as part of that phase's own scope — using the prototype's VS Code-metaphor visual theme (colors/typography/style tokens) for consistency — rather than matching a pre-existing mockup that doesn't exist. The login page stays a standalone static page, explicitly not folded into Phase 13's base global structure the way Phase 12a's background is.
+- Reasoning: Owner's direct choice, made when asked how to handle the missing prototype reference — design fresh within the phase rather than requiring a separate design step beforehand.
+- Consequences: `PHASES.md`'s Phase 13 (title, objective, scope, completion criteria) and Phases 14–22's "match the prototype exactly" standard-setting language were updated to reference Phase 12a specifically (not the now-split Phase 12). Phase 23's wiring-up scope now explicitly includes wiring Phase 12b's login page to Phase 4's `/auth-api/login` endpoint, alongside the other static-to-real wiring it already covered.
+
 ## Decision: Login mechanics — server-side session cookie, bcrypt hashing, Postgres-backed storage
 
 - Status: Accepted
