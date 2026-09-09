@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { testRoutes } from "./testRoutes.js";
 import { authRoutes } from "./auth/authRoutes.js";
+import { sqlConsoleRoutes } from "./sqlConsole/sqlConsoleRoutes.js";
 import { pool } from "./db/pool.js";
 import { ensureSchema } from "./db/schema.js";
 
@@ -45,6 +46,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/test-api", testRoutes);
 app.use("/auth-api", authRoutes);
+app.use("/sql-console-api", sqlConsoleRoutes);
 
 async function bootstrap() {
   await ensureSchema();

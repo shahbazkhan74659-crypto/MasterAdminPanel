@@ -27,6 +27,22 @@
 <pre id="logout">logout: (not run yet)</pre>
 <pre id="session">session: (not run yet)</pre>
 
+<h1>Phase 5 — SQL console test</h1>
+
+<select id="sqlEngine">
+  <option value="postgres">postgres</option>
+  <option value="mysql">mysql</option>
+  <option value="sqlite">sqlite</option>
+</select>
+<button onclick="listTables()">List Tables</button>
+<pre id="sqlTables">tables: (not run yet)</pre>
+
+<br>
+<textarea id="sqlText" rows="4" cols="60">SELECT 1</textarea><br>
+<label><input type="checkbox" id="sqlConfirm"> confirm (required for non-SELECT)</label><br>
+<button onclick="runQuery()">Run Query</button>
+<pre id="sqlResult">query: (not run yet)</pre>
+
 <script>
 async function test(engine) {
   const el = document.getElementById(engine);
@@ -80,6 +96,38 @@ async function checkSession() {
     el.textContent = "session: " + JSON.stringify(data, null, 2);
   } catch (err) {
     el.textContent = "session: fetch failed - " + err;
+  }
+}
+
+async function listTables() {
+  const engine = document.getElementById("sqlEngine").value;
+  const el = document.getElementById("sqlTables");
+  el.textContent = "tables: running...";
+  try {
+    const res = await fetch("/sql-console-api/" + engine + "/tables");
+    const data = await res.json();
+    el.textContent = "tables: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "tables: fetch failed - " + err;
+  }
+}
+
+async function runQuery() {
+  const engine = document.getElementById("sqlEngine").value;
+  const sql = document.getElementById("sqlText").value;
+  const confirm = document.getElementById("sqlConfirm").checked;
+  const el = document.getElementById("sqlResult");
+  el.textContent = "query: running...";
+  try {
+    const res = await fetch("/sql-console-api/" + engine + "/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sql, confirm }),
+    });
+    const data = await res.json();
+    el.textContent = "query: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "query: fetch failed - " + err;
   }
 }
 </script>
