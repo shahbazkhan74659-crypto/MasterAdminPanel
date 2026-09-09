@@ -10,6 +10,7 @@ import { sqlConsoleRoutes } from "./sqlConsole/sqlConsoleRoutes.js";
 import { dataRoutes } from "./dataManagement/dataRoutes.js";
 import { pool } from "./db/pool.js";
 import { ensureSchema } from "./db/schema.js";
+import { initConnections } from "./sqlConsole/connections.js";
 
 dotenv.config({ path: fileURLToPath(new URL("../../.env.local", import.meta.url)) });
 
@@ -53,6 +54,7 @@ app.use("/data-api", dataRoutes);
 
 async function bootstrap() {
   await ensureSchema();
+  await initConnections();
   app.listen(port, () => {
     console.log(`AdminPanel backend listening on port ${port}`);
   });

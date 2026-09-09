@@ -2,14 +2,15 @@
 
 ## Active
 
-[Phase 10] "Secrets Storage Mechanism" — not yet started. [Phase 9] "Content Admin API Spec Documentation" is now complete (see Completed below) — see `PHASES.md` for Phase 10's full objective/scope/completion criteria.
+[Phase 11] "End-to-End Backend/Local-DB Testing, and Retiring the Phase 3 Test Page" — not yet started. [Phase 10] "Secrets Storage Mechanism" is now complete (see Completed below) — see `PHASES.md` for Phase 11's full objective/scope/completion criteria.
 
 ## Next
 
-The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 10 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
-- Secrets-storage mechanism now that `safeStorage` no longer applies — to be decided as part of [Phase 10] "Secrets Storage Mechanism", see `PHASES.md`.
+The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 11 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
 - Whether records get git-like diff/version history in the editor pane — **not assigned to any phase** in the locked roadmap; a genuinely open idea with no scheduled home.
 - A real, remotely-implementable version of the Content Admin API (per-site auth/API keys, search, media listing, and an actual HTTP call to a separate site's own backend) — **not assigned to any phase**; [Phase 9]'s spec documents AdminPanel's own internal `/data-api` contract only, not this. See `DECISIONS.md`'s Phase 9 entry.
+
+Resolved 2026-09-09: [Phase 10] "Secrets Storage Mechanism" is complete — an encrypted `secrets` table in `adminpanel_app` Postgres (AES-256-GCM via `node:crypto`, a `category` column separating `db-credential`/`api-key`), with the real SQL Console credentials (`TARGET_*`, `REMOTE_SITE_PORTFOLIO_*`) migrated in via `npm run migrate-secrets` and retired from `.env.local` for real (owner's direct choice — proven, not just built, by re-running Phase 5/7/8's verification with those env vars actually gone). See `PHASES.md`, `DECISIONS.md`.
 
 Resolved 2026-09-09: [Phase 9] "Content Admin API Spec Documentation" is complete, with a scope correction — the spec documents AdminPanel's real internal `/data-api`/`/auth-api` contract (its own locally-reachable databases only), not a protocol any remote site implements, since that relationship was never actually built. New file `Project Docs/CONTENT-ADMIN-API-SPEC.md` (a deliberate exception to the six-file limit — see `CLAUDE.md`). See `PHASES.md`, `DECISIONS.md`.
 
