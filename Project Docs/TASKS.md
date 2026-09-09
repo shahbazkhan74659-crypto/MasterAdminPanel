@@ -2,13 +2,16 @@
 
 ## Active
 
-[Phase 9] "Content Admin API Spec Documentation" — not yet started. [Phase 8] "SQL Console Access/Modification Policy" is now complete (see Completed below) — protected-table-name write policy enforced across every connection. See `PHASES.md` for Phase 9's full objective/scope/completion criteria.
+[Phase 10] "Secrets Storage Mechanism" — not yet started. [Phase 9] "Content Admin API Spec Documentation" is now complete (see Completed below) — see `PHASES.md` for Phase 10's full objective/scope/completion criteria.
 
 ## Next
 
-The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 9 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
+The full roadmap (`PHASES.md`, Phase 0–30) is locked and gives the complete build order — Phase 10 is next up per Active above. A few items are still genuinely undecided even though most now have an assigned phase (the phase is *when* it gets decided, not that it already has been):
 - Secrets-storage mechanism now that `safeStorage` no longer applies — to be decided as part of [Phase 10] "Secrets Storage Mechanism", see `PHASES.md`.
 - Whether records get git-like diff/version history in the editor pane — **not assigned to any phase** in the locked roadmap; a genuinely open idea with no scheduled home.
+- A real, remotely-implementable version of the Content Admin API (per-site auth/API keys, search, media listing, and an actual HTTP call to a separate site's own backend) — **not assigned to any phase**; [Phase 9]'s spec documents AdminPanel's own internal `/data-api` contract only, not this. See `DECISIONS.md`'s Phase 9 entry.
+
+Resolved 2026-09-09: [Phase 9] "Content Admin API Spec Documentation" is complete, with a scope correction — the spec documents AdminPanel's real internal `/data-api`/`/auth-api` contract (its own locally-reachable databases only), not a protocol any remote site implements, since that relationship was never actually built. New file `Project Docs/CONTENT-ADMIN-API-SPEC.md` (a deliberate exception to the six-file limit — see `CLAUDE.md`). See `PHASES.md`, `DECISIONS.md`.
 
 Resolved 2026-09-09: the SQL console's granular, per-database/per-connection access policy (beyond the basic global read-only-by-default posture already resolved in Phase 5) is settled — a protected-table-name policy (tables containing "user"/"credential"/"session"/"password"/"secret" are read-only, never writable, across every connection) enforced in `backend/src/sqlConsole/policy.ts`, owner's direct choice, Phase 8. See `PHASES.md`, `DECISIONS.md`.
 

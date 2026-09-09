@@ -45,6 +45,8 @@ Never silently modify, delete, or replace important documentation. If a change m
 ### 8. Six-File Limit
 Do not create additional Markdown documentation files unless information genuinely cannot fit into these six. Assume these six are sufficient by default.
 
+**One deliberate exception exists, as of [Phase 9] (2026-09-09):** `Project Docs/CONTENT-ADMIN-API-SPEC.md` — a formal protocol reference for future Content Admin API implementers. None of the six files' responsibilities fit a technical spec meant to be read by a third party implementing against this system (as opposed to project-management documentation about the system itself), so a seventh file was justified rather than folding a large protocol reference into `ARCHITECTURE.md`. This is the only sanctioned exception — do not treat it as precedent for adding further files without the same "genuinely doesn't fit the six" bar being met again.
+
 ### 9. Actual Project State
 Documentation must always reflect the actual project state. Never document a feature, architecture, system, component, or integration as completed when it is not actually implemented. As of this writing, **no production code exists** — only a design/prototype layer (see `ARCHITECTURE.md`). Do not describe the Electron/React app, the Content Admin API, or the SQL console as built until they actually are.
 
