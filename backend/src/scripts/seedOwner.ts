@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
 import { pool } from "../db/pool.js";
 import { ensureSchema } from "../db/schema.js";
+import { upsertUser } from "./upsertUser.js";
 
 dotenv.config({ path: fileURLToPath(new URL("../../../.env.local", import.meta.url)) });
 
@@ -14,15 +14,7 @@ async function main() {
   }
 
   await ensureSchema();
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  await pool.query(
-    `INSERT INTO users (username, password_hash)
-     VALUES ($1, $2)
-     ON CONFLICT (username) DO UPDATE
-       SET password_hash = EXCLUDED.password_hash, updated_at = now()`,
-    [username, passwordHash]
-  );
+  await upsertUser(username, password);
 
   console.log(`Seeded/updated owner account "${username}".`);
   await pool.end();

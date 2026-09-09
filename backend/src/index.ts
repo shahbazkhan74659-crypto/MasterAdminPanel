@@ -4,7 +4,6 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { testRoutes } from "./testRoutes.js";
 import { authRoutes } from "./auth/authRoutes.js";
 import { sqlConsoleRoutes } from "./sqlConsole/sqlConsoleRoutes.js";
 import { dataRoutes } from "./dataManagement/dataRoutes.js";
@@ -20,7 +19,6 @@ const port = process.env.PORT ?? 3001;
 
 app.use(express.json());
 
-app.use(express.static(path.resolve(fileURLToPath(new URL("../public", import.meta.url)))));
 app.use("/media", express.static(path.resolve(fileURLToPath(new URL("../media", import.meta.url)))));
 
 app.use(
@@ -47,7 +45,6 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.use("/test-api", testRoutes);
 app.use("/auth-api", authRoutes);
 app.use("/sql-console-api", sqlConsoleRoutes);
 app.use("/data-api", dataRoutes);

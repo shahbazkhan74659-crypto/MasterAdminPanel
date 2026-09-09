@@ -9,3 +9,5 @@ release/
 .DS_Store
 local-data/
 backend/media/
+backend/test-results/
+backend/playwright-report/
