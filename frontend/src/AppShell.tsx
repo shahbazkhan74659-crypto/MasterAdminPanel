@@ -134,7 +134,25 @@ function AppShell() {
             </div>
           </div>
         </div>
-        <div className="editor-col">{/* Phases 17/18/21/22: tabs / SQL console / editor pane / split panes */}</div>
+        <div className="editor-col">
+          <div className="tabbar">
+            <div className="tab active">
+              <span className="doc-icon-sm">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <span className="tab-label">Launching Our New Storefront</span>
+              <button type="button" className="tab-close">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* Phase 18/21/22: SQL console / editor pane / split panes */}
+        </div>
       </div>
 
       <div className="statusbar">{/* Phase 20: status bar items */}</div>

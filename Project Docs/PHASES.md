@@ -307,7 +307,7 @@ To be defined in further detail as the owner directs. Implied by the phase name 
 ### Completion Criteria
 The real frontend renders editor tabs visually and structurally matching the design canvas prototype exactly, using static placeholder tab content — with no backend or database connection of any kind.
 
-**Status: Not started.**
+**Status: Complete (2026-09-09).** Filled in `frontend/src/AppShell.tsx`'s `.editor-col` shell with a `.tabbar` containing a single static tab, reused verbatim from the prototype's own default render state (`design/Main.dc.html`'s default `tabs` array — one record tab for `nw-posts`/record `p1`, `dirty: false`) rather than inventing new placeholder content, matching Phase 15/16's precedent: the doc icon, the label "Launching Our New Storefront" (the same record Phase 16 already shows as the active row in the explorer tree), no dirty dot (record isn't dirty in the default state), and a static, non-functional `.tab-close` (×) button — the tab itself rendered in its active state (`.tab.active`, the `#3794ff` bottom-border indicator). Added the missing tab-strip CSS to `AppShell.css` verbatim from the prototype's stylesheet (`.tabbar`, `.tab`, `.tab:hover`, `.tab.active`, `.tab-label`, `.dirty-dot`, `.tab.active .dirty-dot`, `.tab-close`, `.tab-close:hover`); `.doc-icon-sm` already existed from Phase 16 and is used here for the first time. No backend/database connection, click-to-switch, working close button, or state of any kind. Verified via a clean `tsc --noEmit` and a real browser check of `http://localhost:5174/` against `design/master-admin-panel.html`, plus confirming `/login` still renders unaffected.
 
 ## Phase 18 — SQL Console Panel (Static, Matching the Prototype)
 
