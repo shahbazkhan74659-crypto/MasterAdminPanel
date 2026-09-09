@@ -1,5 +1,6 @@
+import type { Pool } from "pg";
 import type { ResultSetHeader } from "mysql2";
-import { pgPool, mysqlPool, sqliteDb } from "./connections.js";
+import { mysqlPool, sqliteDb } from "./connections.js";
 
 export interface QueryResult {
   columns: string[];
@@ -9,9 +10,9 @@ export interface QueryResult {
   command?: string;
 }
 
-export async function runPostgresQuery(sql: string): Promise<QueryResult> {
+export async function runPostgresQuery(pool: Pool, sql: string): Promise<QueryResult> {
   const start = Date.now();
-  const result = await pgPool.query(sql);
+  const result = await pool.query(sql);
   const elapsedMs = Date.now() - start;
   return {
     columns: result.fields.map((f) => f.name),
@@ -61,8 +62,8 @@ export function runSqliteQuery(sql: string): QueryResult {
   return { columns: [], rows: [], rowCount: info.changes, elapsedMs };
 }
 
-export async function listPostgresTables(): Promise<string[]> {
-  const result = await pgPool.query(
+export async function listPostgresTables(pool: Pool): Promise<string[]> {
+  const result = await pool.query(
     "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name"
   );
   return result.rows.map((r: { table_name: string }) => r.table_name);

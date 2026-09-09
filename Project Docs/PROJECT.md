@@ -29,14 +29,16 @@ Build one admin panel, once, that can manage content across many different sites
 
 ## Target Users
 
-The project owner, personally — as the operator managing content across their own sites and personal databases. Currently gated by a single-user login (owner only). The owner has flagged a future direction where an Admin can create additional "agent" accounts under some policy system, but this is **not designed and not current scope** — only the login flow is being built for now (see `DECISIONS.md`, `TASKS.md`).
+The project owner, personally — as the operator managing content across their own sites and personal databases. Currently gated by a single-user login (owner only). The owner has flagged a future direction where an Admin can create additional "agent" accounts under some policy system — deferred to **Version 2**, not designed and not current scope — only the login flow is being built for now (see `DECISIONS.md`, `TASKS.md`).
 
 ## Core Features
 
-- Login flow: single-user authentication gating the whole panel (current scope — see `DECISIONS.md`). Future, not-yet-designed direction: an Admin role able to create additional "agent" accounts under some policy system — noted here as intent only, not to be built until asked for.
+- Login flow: single-user authentication gating the whole panel (current scope — see `DECISIONS.md`). **Version 2 (future direction, not current scope):** an Admin role able to create additional "agent" accounts under some policy system — noted here as intent only, not designed, not to be built until asked for.
 - Content Admin API client: auth, collection listing, schema-driven CRUD forms, media upload/listing, search — across any site implementing the contract. Image and Video are real, first-class schema field types (not just a narratively-mentioned "image picker") — see `DECISIONS.md`.
 - VS Code-metaphor UI: activity bar, explorer sidebar, editor tabs, command palette, status bar, split panes.
-- SQL console: direct DB connection per site, table chips, query input, result grid — a deliberate, explicit exception to the schema-driven CRUD path (see `DECISIONS.md`).
+- SQL console: direct DB connection per site, table chips, query input, result grid — a deliberate, explicit exception to the schema-driven CRUD path (see `DECISIONS.md`). Current scope (Phase 0–30): databases reachable **locally, on the same machine/disk** as AdminPanel itself only — a genuinely remote/production database (e.g. a hosted Neon instance) is Version 2, see below.
+
+**Version 2 (future direction, not current scope):** a "Generate Connection" capability — an API/UI to register a new site's database connection at runtime (submit its host/port/credentials, get back a usable connection), replacing [Phase 7]'s static, hardcoded-per-site approach (a fixed id added to a code-level list, credentials added to `.env.local`, backend restarted). Also Version 2: connecting to a site's genuinely **remote/production** database (e.g. Portfolio's Neon Postgres) rather than only a database reachable locally — the current roadmap (Phase 0–30) restricts both the SQL Console (Phase 5) and its Phase 7 remote-site extension to databases on the same machine/disk as AdminPanel itself (AdminPanel's own local test databases, and other local sites' local dev databases); a real network hop to a hosted production database is explicitly out of scope until Version 2. Noted here as intent only — see `DECISIONS.md`'s "Generate Connection API deferred to Version 2" entry. Not assigned to any phase in the locked Phase 0–30 roadmap (`PHASES.md`) and not to be built until asked for.
 
 The existing design canvas prototype (`design/master-admin-panel.html`) demonstrates the intended visual/interaction design as a mock frontend only — no real API calls, no real DB connection, no production backend. See `ARCHITECTURE.md`.
 

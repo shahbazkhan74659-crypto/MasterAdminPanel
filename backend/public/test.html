@@ -76,6 +76,20 @@
 <button onclick="dmUploadFile()">Upload File (uses id above)</button>
 <pre id="dmUpload">upload: (not run yet)</pre>
 
+<h1>Phase 7 — remote site (Portfolio) test</h1>
+
+<select id="siteId">
+  <option value="portfolio">portfolio</option>
+</select>
+<button onclick="siteListTables()">List Tables</button>
+<pre id="siteTables">tables: (not run yet)</pre>
+
+<br>
+<textarea id="siteSqlText" rows="4" cols="60">SELECT * FROM projects_project LIMIT 5</textarea><br>
+<label><input type="checkbox" id="siteSqlConfirm"> confirm (required for non-SELECT)</label><br>
+<button onclick="siteRunQuery()">Run Query</button>
+<pre id="siteResult">query: (not run yet)</pre>
+
 <script>
 async function test(engine) {
   const el = document.getElementById(engine);
@@ -285,6 +299,38 @@ async function dmUploadFile() {
     el.textContent = "upload: " + res.status + " " + JSON.stringify(data, null, 2);
   } catch (err) {
     el.textContent = "upload: fetch failed - " + err;
+  }
+}
+
+async function siteListTables() {
+  const siteId = document.getElementById("siteId").value;
+  const el = document.getElementById("siteTables");
+  el.textContent = "tables: running...";
+  try {
+    const res = await fetch("/sql-console-api/sites/" + siteId + "/tables");
+    const data = await res.json();
+    el.textContent = "tables: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "tables: fetch failed - " + err;
+  }
+}
+
+async function siteRunQuery() {
+  const siteId = document.getElementById("siteId").value;
+  const sql = document.getElementById("siteSqlText").value;
+  const confirm = document.getElementById("siteSqlConfirm").checked;
+  const el = document.getElementById("siteResult");
+  el.textContent = "query: running...";
+  try {
+    const res = await fetch("/sql-console-api/sites/" + siteId + "/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sql, confirm }),
+    });
+    const data = await res.json();
+    el.textContent = "query: " + res.status + " " + JSON.stringify(data, null, 2);
+  } catch (err) {
+    el.textContent = "query: fetch failed - " + err;
   }
 }
 </script>

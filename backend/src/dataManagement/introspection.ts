@@ -25,7 +25,7 @@ export interface CollectionSchema {
 export async function listCollections(engine: EngineName): Promise<string[]> {
   switch (engine) {
     case "postgres":
-      return listPostgresTables();
+      return listPostgresTables(pgPool);
     case "mysql":
       return listMysqlTables();
     case "sqlite":
