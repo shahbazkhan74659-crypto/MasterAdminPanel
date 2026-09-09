@@ -281,7 +281,7 @@ To be defined in further detail as the owner directs. Implied by the phase name 
 ### Completion Criteria
 The real frontend renders an activity bar visually and structurally matching the design canvas prototype exactly, using static placeholder content — with no backend or database connection of any kind.
 
-**Status: Not started.**
+**Status: Complete (2026-09-09).** Filled in `frontend/src/AppShell.tsx`'s `.activitybar` shell with two static site-avatar items reused verbatim from the prototype's own default demo data (`design/Main.dc.html`'s `SITES_INITIAL`/`activeSiteId`) rather than inventing new placeholder content — "Northwind Blog" (`NB`, `#3fa7ff`, active, matching the prototype's default `activeSiteId: 'northwind'`) and "Acme Shop" (`AS`, `#c77dff`) — plus the flex spacer and a static, non-functional "Connect new site" `+` button (no click handlers, same precedent as Phase 13's static "Ctrl K" button). Added the missing item-level CSS to `AppShell.css` (`.activity-item`, `.activity-item:hover`/`.active`, the active-state left white indicator bar, `.avatar`, `.avatar-add`, `.activity-spacer`) verbatim from the prototype's stylesheet — the container rule `.activitybar` itself was already correct from Phase 13. No backend/database connection, click handling, or state of any kind. Verified via a clean `tsc --noEmit` and a real browser check of `http://localhost:5174/` against `design/master-admin-panel.html`.
 
 ## Phase 16 — Explorer Sidebar (Static, Matching the Prototype)
 

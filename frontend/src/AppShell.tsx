@@ -26,7 +26,22 @@ function AppShell() {
       </div>
 
       <div className="main-row">
-        <div className="activitybar">{/* Phase 15: activity bar items */}</div>
+        <div className="activitybar">
+          <div className="activity-item active" title="Northwind Blog">
+            <span className="avatar" style={{ background: '#3fa7ff' }}>NB</span>
+          </div>
+          <div className="activity-item" title="Acme Shop">
+            <span className="avatar" style={{ background: '#c77dff' }}>AS</span>
+          </div>
+          <div className="activity-spacer" />
+          <div className="activity-item" title="Connect new site">
+            <span className="avatar avatar-add">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </span>
+          </div>
+        </div>
         <div className="sidebar">{/* Phase 16: sidebar header + tree */}</div>
         <div className="editor-col">{/* Phases 17/18/21/22: tabs / SQL console / editor pane / split panes */}</div>
       </div>
