@@ -1,6 +1,6 @@
 # Content Admin API — Specification
 
-**Status: Formalized 2026-09-09 ([Phase 9]).** This document specifies the request/response contract actually implemented by AdminPanel's backend in `backend/src/dataManagement/` (mounted at `/data-api`) and `backend/src/auth/` (mounted at `/auth-api`) — written from the working code, not designed speculatively.
+**Status: Formalized 2026-09-09 ([Phase 9]), extended 2026-09-11 ([Phase 23]).** This document specifies the request/response contract actually implemented by AdminPanel's backend in `backend/src/dataManagement/` (mounted at `/data-api`) and `backend/src/auth/` (mounted at `/auth-api`) — written from the working code, not designed speculatively. [Phase 23] added a staging/draft sub-resource to the Records section (§4.2) — see below.
 
 ## Scope note — read this before anything else
 
@@ -141,6 +141,30 @@ Applied to every `values` object on create/update, against the collection's live
   - `date` — must be a string parseable by `Date.parse` (i.e. a valid ISO-8601-ish date string).
   - `other` — passed through unchanged, no validation.
 
+### 4.2 Staging (drafts & deploy) — ✅ Implemented ([Phase 23])
+
+Every write in §4 above still applies immediately to the live database — that has not changed. Staging is a **separate, opt-in sub-resource**: a draft is a full shadow copy of a record's would-be values, held in AdminPanel's own metadata database (not the target engine) until explicitly deployed. At most one pending draft exists per `(engine, collection, record id)`; staging a second edit before the first deploys just updates that same draft (upsert, not a queue). Deploying always overwrites the live row with the draft's values — there is no conflict detection against changes made to the live row after the draft was started. Scoped to this schema-driven path only — the SQL Console (`/sql-console-api/*`) has its own separate, unrelated write-safety model and is untouched by staging.
+
+**`POST /data-api/:engine/:collection/records/:id/draft`**
+Body: `{ "values": { "<field>": <value>, ... } }` (partial is fine — merged onto the existing draft, or the live row if none, into a full shadow copy; validated exactly like `PATCH .../records/:id` in §4.1).
+- `404` if the live record doesn't exist.
+- `200 { "ok": true, "draft": { "id", "engine", "collection", "recordId", "values", "createdAt", "updatedAt" } }`.
+
+**`GET /data-api/:engine/:collection/records/:id/draft`**
+- `404` if the live record doesn't exist.
+- `200 { "ok": true, "hasDraft": boolean, "live": {...}, "draft": {...}, "fields": [...], "diff": { "<field>": { "live", "draft", "changed" } } }` — `live` is the current row normalized through the same coercion a draft's values already went through; `draft` is the pending draft's values, or (if none) the same normalized live values; `diff` is computed server-side per field so callers never need schema-aware comparison logic of their own; `fields` is the collection's schema fields, included so a caller doesn't need a second `GET .../schema` round trip.
+
+**`DELETE /data-api/:engine/:collection/records/:id/draft`**
+- `200 { "ok": true }` if a pending draft was discarded, `404 { "ok": false, "error": "No draft to discard" }` if none existed.
+
+**`POST /data-api/:engine/:collection/records/:id/deploy`**
+Body: `{ "confirm": boolean }`. Applies the pending draft's values to the live row via the same write path §4's `PATCH .../records/:id` uses.
+- `404` if no pending draft exists for this record.
+- `403` if the collection name matches the SQL Console's [Phase 8] protected-table policy (a case-insensitive substring match against "user"/"credential"/"session"/"password"/"secret") — reused verbatim from `sqlConsole/policy.ts`; checked **before** the confirm requirement, so a protected-name collection is blocked even with `confirm:true`. Staging a draft against such a table is still allowed — only the live deploy write is blocked.
+- `409` if `confirm` is not `true`.
+- `400` if the draft's stored values no longer validate against the collection's *current* schema (e.g. a column was dropped or renamed after the draft was staged) — the same validation §4.1 describes runs again at deploy time, so schema drift surfaces as an ordinary validation error rather than a special case.
+- `200 { "ok": true, "record": {...} }` with the row after deploy. The draft is deleted, and an entry is appended to an internal `deploy_log` table (no read endpoint exists against it yet — a forward-compat hook only, see `DECISIONS.md`'s "Phase 23 implementation" entry).
+
 ## 5. Media upload (Image / Video fields) — ✅ Implemented; ❌ media *listing* not implemented
 
 ### `POST /data-api/:engine/:collection/records/:id/upload/:field`
@@ -180,4 +204,4 @@ Every endpoint in this document uses the same shape on failure:
 
 - Not a guide for connecting a real, separate website's backend to this contract — no such integration has ever been built or tested (see the Scope note above).
 - Not the SQL Console's contract (`/sql-console-api/*`) — that is a deliberately separate, unrestricted raw-SQL path (see `DECISIONS.md`'s "SQL console connects directly to the database" decision), out of scope for the Content Admin API.
-- Not a guarantee of stability — every shape above reflects the code as of [Phase 6]/[Phase 7]/[Phase 8]; if that code changes materially, this document needs a follow-up update to stay accurate (per `CLAUDE.md` rule 9).
+- Not a guarantee of stability — every shape above reflects the code as of [Phase 6]/[Phase 7]/[Phase 8]/[Phase 23]; if that code changes materially, this document needs a follow-up update to stay accurate (per `CLAUDE.md` rule 9).
