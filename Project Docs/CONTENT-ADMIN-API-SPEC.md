@@ -165,6 +165,11 @@ Body: `{ "confirm": boolean }`. Applies the pending draft's values to the live r
 - `400` if the draft's stored values no longer validate against the collection's *current* schema (e.g. a column was dropped or renamed after the draft was staged) — the same validation §4.1 describes runs again at deploy time, so schema drift surfaces as an ordinary validation error rather than a special case.
 - `200 { "ok": true, "record": {...} }` with the row after deploy. The draft is deleted, and an entry is appended to an internal `deploy_log` table (no read endpoint exists against it yet — a forward-compat hook only, see `DECISIONS.md`'s "Phase 23 implementation" entry).
 
+**`POST /data-api/:engine/drafts/deploy-all`** — bulk deploy, added when the editor pane's per-record Deploy button was replaced by one global "deploy everything" action (see `DECISIONS.md`).
+Body: `{ "confirm": boolean }`. Applies **every** pending draft across **every** collection for the given engine, one at a time — not all-or-nothing: a single protected or invalid draft does not block the rest from deploying.
+- `409` if `confirm` is not `true` — nothing is deployed.
+- `200 { "ok": true, "deployed": [{ "collection", "recordId" }], "skipped": [{ "collection", "recordId", "reason": "policy" }], "failed": [{ "collection", "recordId", "error" }] }`. `skipped` entries are drafts against a [Phase 8] protected-table-name collection (never deployed, draft left in place); `failed` entries are drafts that no longer validate against their collection's current schema, or whose live record has since been deleted (draft left in place); `deployed` entries were applied exactly like the single-record deploy endpoint above (draft deleted, `deploy_log` entry appended). An empty pending-drafts state returns `200` with all three arrays empty, not an error.
+
 ## 5. Media upload (Image / Video fields) — ✅ Implemented; ❌ media *listing* not implemented
 
 ### `POST /data-api/:engine/:collection/records/:id/upload/:field`

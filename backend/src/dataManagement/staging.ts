@@ -100,6 +100,17 @@ export async function listDrafts(engine: EngineName, collection: string): Promis
   return result.rows.map(mapRow);
 }
 
+// Spans every collection for an engine, unlike listDrafts (one collection) --
+// backs the bulk "deploy every pending draft for the site" action.
+export async function listAllDrafts(engine: EngineName): Promise<DraftRow[]> {
+  const result = await pool.query<DraftDbRow>(
+    `SELECT id, engine, collection, record_id, draft_values, created_at, updated_at
+     FROM drafts WHERE engine = $1 ORDER BY updated_at ASC`,
+    [engine]
+  );
+  return result.rows.map(mapRow);
+}
+
 export async function discardDraft(engine: EngineName, collection: string, recordId: string): Promise<boolean> {
   const result = await pool.query(`DELETE FROM drafts WHERE engine = $1 AND collection = $2 AND record_id = $3`, [
     engine,

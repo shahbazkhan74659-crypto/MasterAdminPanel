@@ -9,6 +9,8 @@
     "start": "node dist/index.js",
     "seed:owner": "tsx src/scripts/seedOwner.ts",
     "seed:demo-post": "tsx src/scripts/seedDemoPost.ts",
+    "seed:field-types-demo": "tsx src/scripts/seedFieldTypesDemo.ts",
+    "cleanup:e2e-fixtures": "tsx src/scripts/cleanupE2eFixtures.ts",
     "migrate-secrets": "tsx src/scripts/migrateSecrets.ts",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",

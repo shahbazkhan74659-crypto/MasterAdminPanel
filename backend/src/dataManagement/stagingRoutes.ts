@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isProtectedTable } from "../sqlConsole/policy.js";
-import { saveDraft, getDraft, getDraftWithLiveDiff, discardDraft, deployDraft } from "./staging.js";
+import { saveDraft, getDraft, getDraftWithLiveDiff, discardDraft, deployDraft, listAllDrafts } from "./staging.js";
 import { isValidEngine, assertKnownCollection, handleError } from "./routeHelpers.js";
 
 export const stagingRoutes = Router();
@@ -92,6 +92,46 @@ stagingRoutes.post("/:engine/:collection/records/:id/deploy", async (req, res) =
 
     const { record } = await deployDraft(engine, collection, id);
     res.json({ ok: true, record });
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// Bulk deploy: every pending draft across every collection for the engine, in
+// one action. One bad/protected draft must not block the rest, so this
+// reports partial success (deployed/skipped/failed) rather than aborting on
+// the first problem -- the per-record route above stays all-or-nothing since
+// it only ever targets one record.
+stagingRoutes.post("/:engine/drafts/deploy-all", async (req, res) => {
+  const { engine } = req.params;
+  if (!isValidEngine(engine)) {
+    res.status(400).json({ ok: false, error: `Unknown engine "${engine}"` });
+    return;
+  }
+  const { confirm } = req.body ?? {};
+  if (confirm !== true) {
+    res.status(409).json({ ok: false, error: "Deploy requires confirm:true" });
+    return;
+  }
+  try {
+    const drafts = await listAllDrafts(engine);
+    const deployed: { collection: string; recordId: string }[] = [];
+    const skipped: { collection: string; recordId: string; reason: string }[] = [];
+    const failed: { collection: string; recordId: string; error: string }[] = [];
+
+    for (const draft of drafts) {
+      if (isProtectedTable(draft.collection)) {
+        skipped.push({ collection: draft.collection, recordId: draft.recordId, reason: "policy" });
+        continue;
+      }
+      try {
+        await deployDraft(engine, draft.collection, draft.recordId);
+        deployed.push({ collection: draft.collection, recordId: draft.recordId });
+      } catch (err) {
+        failed.push({ collection: draft.collection, recordId: draft.recordId, error: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    res.json({ ok: true, deployed, skipped, failed });
   } catch (err) {
     handleError(err, res);
   }
