@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { postQuery, type Engine } from "./helpers/api.js";
+import { AUTH_STATE_PATH } from "./authState.js";
+
+test.use({ storageState: AUTH_STATE_PATH });
 
 const ENGINES: Engine[] = ["postgres", "mysql", "sqlite"];
 

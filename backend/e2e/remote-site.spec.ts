@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { postSiteQuery } from "./helpers/api.js";
+import { AUTH_STATE_PATH } from "./authState.js";
+
+test.use({ storageState: AUTH_STATE_PATH });
 
 // Portfolio's real, external, local dev database (Phase 7). Read-only only -- never
 // a confirmed write against real data, matching every prior phase's own discipline.

@@ -11,6 +11,7 @@ import { stagingRoutes } from "./dataManagement/stagingRoutes.js";
 import { pool } from "./db/pool.js";
 import { ensureSchema } from "./db/schema.js";
 import { initConnections } from "./sqlConsole/connections.js";
+import { requireAuth } from "./auth/requireAuth.js";
 
 dotenv.config({ path: fileURLToPath(new URL("../../.env.local", import.meta.url)) });
 
@@ -19,8 +20,6 @@ const app = express();
 const port = process.env.PORT ?? 3001;
 
 app.use(express.json());
-
-app.use("/media", express.static(path.resolve(fileURLToPath(new URL("../media", import.meta.url)))));
 
 app.use(
   session({
@@ -46,7 +45,13 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
+// Public: login/logout/me must stay reachable without a session.
 app.use("/auth-api", authRoutes);
+
+// Everything mounted from here on requires a real session (Phase 24a).
+app.use(requireAuth);
+
+app.use("/media", express.static(path.resolve(fileURLToPath(new URL("../media", import.meta.url)))));
 app.use("/sql-console-api", sqlConsoleRoutes);
 app.use("/data-api", dataRoutes);
 app.use("/data-api", stagingRoutes);

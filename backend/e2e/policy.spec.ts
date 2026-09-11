@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { postQuery } from "./helpers/api.js";
+import { AUTH_STATE_PATH } from "./authState.js";
+
+test.use({ storageState: AUTH_STATE_PATH });
 
 // gatedQuery is one shared function reused identically by every local engine and by
 // the remote-site routes -- proving it once against postgres is sufficient here.

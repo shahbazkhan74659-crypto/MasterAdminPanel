@@ -20,6 +20,54 @@ interface DraftDiffResponse {
 const draftUrl = `/data-api/${DEMO.engine}/${DEMO.collection}/records/${DEMO.id}/draft`
 const deployUrl = `/data-api/${DEMO.engine}/${DEMO.collection}/records/${DEMO.id}/deploy`
 
+// Phase 24b: real explorer/tabs. Hardcoded to the postgres engine, same as DEMO
+// above -- real multi-site/engine switching is Phase 24e's (activity bar) job.
+const ENGINE = 'postgres'
+
+interface FieldSchema {
+  name: string
+  baseType: string
+  specialType: string | null
+  isPrimaryKey: boolean
+}
+
+interface CollectionSchema {
+  primaryKey: string | null
+  fields: FieldSchema[]
+}
+
+interface CollectionsResponse {
+  ok: boolean
+  collections?: string[]
+  error?: string
+}
+
+interface RecordsResponse {
+  ok: boolean
+  schema?: CollectionSchema
+  records?: Values[]
+  error?: string
+}
+
+interface OpenTab {
+  key: string
+  collection: string
+  id: string
+  label: string
+  record: Values
+  schema: CollectionSchema
+}
+
+type CollectionEntry = { schema: CollectionSchema; records: Values[] } | 'loading' | 'error'
+
+// Shared by tree rows and tab labels -- deliberately simple, not clever.
+function labelFor(collection: string, record: Values, schema: CollectionSchema): string {
+  if (typeof record.title === 'string' && record.title) return record.title
+  if (typeof record.name === 'string' && record.name) return record.name
+  const pk = schema.primaryKey
+  return `${collection} #${pk ? String(record[pk] ?? '') : ''}`
+}
+
 function AppShell() {
   const [live, setLive] = useState<Values | null>(null)
   const [staged, setStaged] = useState<Values | null>(null)
@@ -29,6 +77,61 @@ function AppShell() {
   const [saving, setSaving] = useState(false)
   const [deploying, setDeploying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Phase 24b: real explorer/tabs state.
+  const [collections, setCollections] = useState<string[] | null>(null)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [collectionData, setCollectionData] = useState<Record<string, CollectionEntry>>({})
+  const [tabs, setTabs] = useState<OpenTab[]>([])
+  const [activeKey, setActiveKey] = useState('compare')
+
+  useEffect(() => {
+    fetch(`/data-api/${ENGINE}/collections`)
+      .then((res) => res.json())
+      .then((body: CollectionsResponse) => {
+        if (body.ok && body.collections) setCollections(body.collections)
+      })
+      .catch(() => {})
+  }, [])
+
+  async function toggleExpand(name: string) {
+    setExpanded((prev) => ({ ...prev, [name]: !prev[name] }))
+    if (collectionData[name]) return
+    setCollectionData((prev) => ({ ...prev, [name]: 'loading' }))
+    try {
+      const res = await fetch(`/data-api/${ENGINE}/${name}/records`)
+      const body: RecordsResponse = await res.json()
+      if (!res.ok || !body.ok || !body.schema || !body.records) {
+        setCollectionData((prev) => ({ ...prev, [name]: 'error' }))
+        return
+      }
+      setCollectionData((prev) => ({ ...prev, [name]: { schema: body.schema!, records: body.records! } }))
+    } catch {
+      setCollectionData((prev) => ({ ...prev, [name]: 'error' }))
+    }
+  }
+
+  function openRecordTab(collection: string, record: Values, schema: CollectionSchema) {
+    if (!schema.primaryKey) return
+    const id = String(record[schema.primaryKey] ?? '')
+    const key = `${collection}:${id}`
+    setTabs((prev) => (prev.some((t) => t.key === key) ? prev : [...prev, { key, collection, id, label: labelFor(collection, record, schema), record, schema }]))
+    setActiveKey(key)
+  }
+
+  function closeTab(key: string) {
+    setTabs((prev) => {
+      const index = prev.findIndex((t) => t.key === key)
+      const next = prev.filter((t) => t.key !== key)
+      if (activeKey === key) {
+        const fallback = next[index - 1] ?? next[index] ?? null
+        setActiveKey(fallback ? fallback.key : 'compare')
+      }
+      return next
+    })
+  }
+
+  const activeTab = tabs.find((t) => t.key === activeKey) ?? null
 
   async function refresh() {
     setLoading(true)
@@ -177,83 +280,55 @@ function AppShell() {
           </div>
           <div className="sidebar-endpoint mono">https://northwind-blog.example.com/api/admin</div>
           <div className="tree">
-            <div className="tree-group">
-              <div className="tree-row tree-collection">
-                <span className="chevron-wrap open">
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="folder-icon">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="tree-label">Posts</span>
-                <span className="tree-count">3</span>
-              </div>
-              <div className="tree-children">
-                <div className="tree-row tree-record active">
-                  <span className="doc-icon">
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                      <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                  <span className="tree-label">Launching Our New Storefront</span>
+            {(collections ?? []).map((name) => {
+              const entry = collectionData[name]
+              const isOpen = Boolean(expanded[name])
+              const count = entry && entry !== 'loading' && entry !== 'error' ? entry.records.length : null
+              return (
+                <div className="tree-group" key={name}>
+                  <div className="tree-row tree-collection" onClick={() => toggleExpand(name)}>
+                    <span className={`chevron-wrap${isOpen ? ' open' : ''}`}>
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                        <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="folder-icon">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="tree-label">{name}</span>
+                    <span className="tree-count">{count ?? ''}</span>
+                  </div>
+                  {isOpen && (
+                    <div className="tree-children">
+                      {entry === 'loading' && <div className="tree-row">Loading…</div>}
+                      {entry === 'error' && <div className="tree-row">Failed to load</div>}
+                      {entry && entry !== 'loading' && entry !== 'error' &&
+                        entry.records.map((record) => {
+                          const id = entry.schema.primaryKey ? String(record[entry.schema.primaryKey] ?? '') : null
+                          const key = id ? `${name}:${id}` : null
+                          return (
+                            <div
+                              className={`tree-row tree-record${key && activeKey === key ? ' active' : ''}`}
+                              key={id ?? JSON.stringify(record)}
+                              onClick={key ? () => openRecordTab(name, record, entry.schema) : undefined}
+                            >
+                              <span className="doc-icon">
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                                  <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                                  <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                              <span className="tree-label">{labelFor(name, record, entry.schema)}</span>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )}
                 </div>
-                <div className="tree-row tree-record">
-                  <span className="doc-icon">
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                      <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                  <span className="tree-label">Five Tips for Faster Onboarding</span>
-                </div>
-                <div className="tree-row tree-record">
-                  <span className="doc-icon">
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                      <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                      <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                  <span className="tree-label">Q3 Roadmap Recap</span>
-                </div>
-              </div>
-            </div>
-            <div className="tree-group">
-              <div className="tree-row tree-collection">
-                <span className="chevron-wrap">
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="folder-icon">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="tree-label">Pages</span>
-                <span className="tree-count">2</span>
-              </div>
-            </div>
-            <div className="tree-group">
-              <div className="tree-row tree-collection">
-                <span className="chevron-wrap">
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                    <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="folder-icon">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M1.5 3.5a1 1 0 0 1 1-1h3.4l1.2 1.6h6.4a1 1 0 0 1 1 1v7.4a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-9z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="tree-label">Authors</span>
-                <span className="tree-count">2</span>
-              </div>
-            </div>
+              )
+            })}
           </div>
         </div>
         <div className="editor-col">
@@ -287,7 +362,7 @@ function AppShell() {
                 </svg>
               </button>
             </div>
-            <div className="tab active">
+            <div className={`tab${activeKey === 'compare' ? ' active' : ''}`} onClick={() => setActiveKey('compare')}>
               <span className="doc-icon-sm">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                   <rect x="1" y="2" width="6" height="12" rx="1" stroke="currentColor" strokeWidth="1.2" />
@@ -295,14 +370,40 @@ function AppShell() {
                 </svg>
               </span>
               <span className="tab-label">Compare · Launching Our New Storefront</span>
+              {dirty && <span className="dirty-dot" />}
               <button type="button" className="tab-close">
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                   <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </button>
             </div>
+            {tabs.map((t) => (
+              <div className={`tab${activeKey === t.key ? ' active' : ''}`} key={t.key} onClick={() => setActiveKey(t.key)}>
+                <span className="doc-icon-sm">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                    <path d="M9.5 1.5v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="tab-label">{t.label}</span>
+                <button
+                  type="button"
+                  className="tab-close"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    closeTab(t.key)
+                  }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+            ))}
           </div>
           <div className="editor-area">
+            {activeKey === 'compare' && (
+            <>
             <div className="editor-toolbar">
               <span className="breadcrumb">Northwind Blog&nbsp;&nbsp;›&nbsp;&nbsp;Posts&nbsp;&nbsp;›&nbsp;&nbsp;Launching Our New Storefront</span>
               <div className="editor-toolbar-right">
@@ -429,6 +530,25 @@ function AppShell() {
                   </div>
                 </div>
               </div>
+            )}
+            </>
+            )}
+            {activeTab && (
+              <>
+                <div className="editor-toolbar">
+                  <span className="breadcrumb">
+                    Northwind Blog&nbsp;&nbsp;›&nbsp;&nbsp;{activeTab.collection}&nbsp;&nbsp;›&nbsp;&nbsp;{activeTab.label}
+                  </span>
+                </div>
+                <div className="editor-form">
+                  {activeTab.schema.fields.map((field) => (
+                    <div className="field-row" key={field.name}>
+                      <label className="field-label">{field.name}</label>
+                      <input className="input" type="text" value={String(activeTab.record[field.name] ?? '')} readOnly />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>

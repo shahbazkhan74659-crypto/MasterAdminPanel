@@ -95,3 +95,14 @@
 .login-submit:hover {
   background: #1177bb;
 }
+
+.login-submit:disabled {
+  background: #3c3c3c;
+  border-color: #3c3c3c;
+  color: #9d9d9d;
+  cursor: default;
+}
+
+.login-error-server {
+  margin-top: 12px;
+}

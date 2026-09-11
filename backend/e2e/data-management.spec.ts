@@ -1,5 +1,8 @@
 import { test, expect } from "./fixtures.js";
 import type { Engine } from "./helpers/api.js";
+import { AUTH_STATE_PATH } from "./authState.js";
+
+test.use({ storageState: AUTH_STATE_PATH });
 
 const TABLE = "e2e_widgets";
 
@@ -51,6 +54,11 @@ test.describe("data management - integrated CRUD flow", () => {
         const res = await request.get(`/data-api/${engine}/${TABLE}/records`);
         const body = await res.json();
         expect(body.records.some((r: { id: unknown }) => String(r.id) === recordId)).toBe(true);
+        // Phase 24b: the explorer needs the schema (primary key, field list) alongside
+        // the rows, so the records endpoint now includes it rather than requiring a
+        // second GET .../schema round trip.
+        expect(body.schema.primaryKey).toBe("id");
+        expect(body.schema.fields.some((f: { name: string }) => f.name === "name")).toBe(true);
       });
 
       await test.step("gets the record by id", async () => {

@@ -46,8 +46,8 @@ dataRoutes.get("/:engine/:collection/records", async (req, res) => {
   const offset = Number(req.query.offset) || 0;
   try {
     await assertKnownCollection(engine, collection);
-    const { rows } = await listRecords(engine, collection, limit, offset);
-    res.json({ ok: true, records: rows, rowCount: rows.length, limit, offset });
+    const { schema, rows } = await listRecords(engine, collection, limit, offset);
+    res.json({ ok: true, schema, records: rows, rowCount: rows.length, limit, offset });
   } catch (err) {
     handleError(err, res);
   }

@@ -1,7 +1,12 @@
 import AppShell from './AppShell'
+import AuthGate from './AuthGate'
 
 function App() {
-  return <AppShell />
+  return (
+    <AuthGate>
+      <AppShell />
+    </AuthGate>
+  )
 }
 
 export default App

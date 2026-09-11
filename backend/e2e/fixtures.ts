@@ -16,6 +16,9 @@ export const test = base.extend<{ fixtureTable: FixtureTableManager }>({
 
     const manager: FixtureTableManager = {
       async create(engine, tableName, createSql) {
+        // Idempotent: self-heals if a prior crashed/interrupted run left this
+        // fixture table behind without its own teardown having run.
+        await postQuery(request, engine, `DROP TABLE IF EXISTS ${tableName}`, true);
         const res = await postQuery(request, engine, createSql, true);
         if (!res.ok()) {
           throw new Error(`Failed to create fixture table "${tableName}" on ${engine}: ${await res.text()}`);

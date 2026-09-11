@@ -1,16 +1,18 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { pool } from "../db/pool.js";
+import { loginSchema } from "./loginSchema.js";
+import { loginRateLimit } from "./loginRateLimit.js";
 
 export const authRoutes = Router();
 
-authRoutes.post("/login", async (req, res) => {
-  const { username, password } = req.body ?? {};
-
-  if (typeof username !== "string" || typeof password !== "string" || !username || !password) {
-    res.status(400).json({ ok: false, error: "username and password are required" });
+authRoutes.post("/login", loginRateLimit, async (req, res) => {
+  const parsed = loginSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ ok: false, error: parsed.error.issues[0]?.message ?? "Invalid request" });
     return;
   }
+  const { username, password } = parsed.data;
 
   const result = await pool.query<{ id: number; username: string; password_hash: string }>(
     "SELECT id, username, password_hash FROM users WHERE username = $1",

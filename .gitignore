@@ -11,3 +11,4 @@ local-data/
 backend/media/
 backend/test-results/
 backend/playwright-report/
+backend/e2e/.auth/

@@ -1,8 +1,16 @@
 import { test, expect } from "./fixtures.js";
 import type { Engine } from "./helpers/api.js";
+import { AUTH_STATE_PATH } from "./authState.js";
+
+test.use({ storageState: AUTH_STATE_PATH });
 
 const TABLE = "e2e_staging_posts";
-const PROTECTED_TABLE = "e2e_user_accounts";
+// Phase 8's protected-table policy blocks DROP TABLE on any name containing "user"
+// (by design -- it must, or the policy would be pointless), so this fixture table
+// can never be torn down through the normal SQL Console path and is deliberately
+// leaked on every run. A per-run-unique suffix keeps that leak from ever colliding
+// with a previous run's leftover instead of trying to clean it up.
+const PROTECTED_TABLE = `e2e_user_accounts_${Date.now()}`;
 const DRIFT_TABLE = "e2e_staging_drift";
 
 const CREATE_SQL: Record<Engine, string> = {
