@@ -23,7 +23,7 @@ So this document is **the real, working schema/CRUD contract** — genuinely use
 - Base path: `/data-api` for schema/CRUD/media, `/auth-api` for login (separate mount, see below).
 - `:engine` is one of `postgres`, `mysql`, `sqlite` — the three [Phase 1b] local target databases. **Not** a remote site id (contrast with the separate `/sql-console-api/sites/:siteId` path, which is out of this spec's scope).
 - Every response is JSON with an `ok: boolean` field. On failure: `{ "ok": false, "error": "<message>" }`.
-- No route documented here requires authentication yet — session-gating every route is [Phase 23]'s job, not done as of this writing.
+- No route documented here requires authentication yet — session-gating every route is [Phase 24]'s job, not done as of this writing.
 - HTTP status codes used: `200`/`201` success, `400` bad input (unknown engine/collection/field, failed validation, unsupported operation on a table with no usable primary key), `404` record or field not found, `500` unexpected/driver error.
 
 ## 1. Authentication — ✅ Implemented (owner-only, not a per-site mechanism)
@@ -34,7 +34,7 @@ Mounted at `/auth-api`. This is the single owner's login to the panel itself, bu
 Request body: `{ "username": string, "password": string }`
 - `400` if either field is missing/non-string.
 - `401` `{ ok: false, error: "Invalid username or password" }` on bad credentials.
-- `200` `{ ok: true, username: string }` on success, plus a `Set-Cookie: adminpanel.sid=...` (httpOnly, `SameSite=Lax`, 8-hour expiry; `secure: false` in local dev — see `DECISIONS.md`'s login-mechanics entry for the required Phase 29 change).
+- `200` `{ ok: true, username: string }` on success, plus a `Set-Cookie: adminpanel.sid=...` (httpOnly, `SameSite=Lax`, 8-hour expiry; `secure: false` in local dev — see `DECISIONS.md`'s login-mechanics entry for the required Phase 30 change).
 
 ### `POST /auth-api/logout`
 No body. Destroys the server-side session and clears the cookie. Always `200 { ok: true }`.
@@ -161,7 +161,7 @@ There is no endpoint to list, browse, or search previously-uploaded media — on
 
 ## 6. Search — ❌ Not implemented
 
-`PROJECT.md`/`DECISIONS.md` name search as a Content Admin API capability. No search endpoint, index, or query parameter exists anywhere in `/data-api`. This remains open — not assigned to any phase in the locked [Phase 0–30] roadmap beyond its mention as an intended capability.
+`PROJECT.md`/`DECISIONS.md` name search as a Content Admin API capability. No search endpoint, index, or query parameter exists anywhere in `/data-api`. This remains open — not assigned to any phase in the locked [Phase 0–31] roadmap beyond its mention as an intended capability.
 
 ## 7. Error envelope reference
 

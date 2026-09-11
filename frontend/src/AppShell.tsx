@@ -45,13 +45,21 @@ function AppShell() {
         <div className="sidebar">
           <div className="sidebar-header">
             <span className="sidebar-header-title">Northwind Blog</span>
-            <button type="button" className="icon-btn" title="Open SQL Console">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
-              </svg>
-            </button>
+            <div className="sidebar-header-actions">
+              <button type="button" className="icon-btn" title="Open SQL Console">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <ellipse cx="8" cy="3.2" rx="5.5" ry="2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 3.2v9.6c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V3.2" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+              </button>
+              <button type="button" className="icon-btn" title="Open Split View">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <rect x="1.5" y="2.5" width="5.5" height="11" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                  <rect x="9" y="2.5" width="5.5" height="11" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="sidebar-endpoint mono">https://northwind-blog.example.com/api/admin</div>
           <div className="tree">
@@ -136,7 +144,7 @@ function AppShell() {
         </div>
         <div className="editor-col">
           <div className="tabbar">
-            <div className="tab active">
+            <div className="tab">
               <span className="doc-icon-sm">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                   <path d="M4 1.5h6l2.5 2.5v10a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
@@ -165,6 +173,20 @@ function AppShell() {
                 </svg>
               </button>
             </div>
+            <div className="tab active">
+              <span className="doc-icon-sm">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <rect x="1" y="2" width="6" height="12" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                  <rect x="9" y="2" width="6" height="12" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+              </span>
+              <span className="tab-label">Compare · Launching Our New Storefront</span>
+              <button type="button" className="tab-close">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="editor-area">
             <div className="editor-toolbar">
@@ -177,44 +199,88 @@ function AppShell() {
                 Save
               </button>
             </div>
-            <div className="editor-form">
-              <div className="field-row">
-                <label className="field-label">Title</label>
-                <input className="input" type="text" defaultValue="Launching Our New Storefront" readOnly />
-              </div>
-              <div className="field-row">
-                <label className="field-label">Slug</label>
-                <input className="input" type="text" defaultValue="launching-our-new-storefront" readOnly />
-              </div>
-              <div className="field-row">
-                <label className="field-label">Status</label>
-                <select className="select" defaultValue="published">
-                  <option value="draft">draft</option>
-                  <option value="scheduled">scheduled</option>
-                  <option value="published">published</option>
-                </select>
-              </div>
-              <div className="field-row">
-                <label className="field-label">Excerpt</label>
-                <textarea className="textarea" defaultValue="A quick look at what changed in the redesign." readOnly />
-              </div>
-              <div className="field-row">
-                <label className="field-label">Tags</label>
-                <div className="tags-field">
-                  <span className="tag-chip">product<button type="button" className="tag-remove">×</button></span>
-                  <span className="tag-chip">launch<button type="button" className="tag-remove">×</button></span>
-                  <input className="tag-input" type="text" placeholder="Add tag + Enter" readOnly />
+            <div className="split-view">
+              <div className="split-pane">
+                <div className="split-pane-header"><span className="status-env prod">Production</span></div>
+                <div className="editor-form">
+                  <div className="field-row">
+                    <label className="field-label">Title</label>
+                    <input className="input" type="text" defaultValue="Launching Our New Storefront" readOnly />
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Slug</label>
+                    <input className="input" type="text" defaultValue="launching-our-new-storefront" readOnly />
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Status</label>
+                    <select className="select" defaultValue="published">
+                      <option value="draft">draft</option>
+                      <option value="scheduled">scheduled</option>
+                      <option value="published">published</option>
+                    </select>
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Excerpt</label>
+                    <textarea className="textarea" defaultValue="A quick look at what changed in the redesign." readOnly />
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Tags</label>
+                    <div className="tags-field">
+                      <span className="tag-chip">product<button type="button" className="tag-remove">×</button></span>
+                      <span className="tag-chip">launch<button type="button" className="tag-remove">×</button></span>
+                      <input className="tag-input" type="text" placeholder="Add tag + Enter" readOnly />
+                    </div>
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Featured</label>
+                    <button type="button" className="toggle on">
+                      <span className="toggle-knob"></span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="field-row">
-                <label className="field-label">Featured</label>
-                <button type="button" className="toggle on">
-                  <span className="toggle-knob"></span>
-                </button>
+              <div className="split-divider"></div>
+              <div className="split-pane">
+                <div className="split-pane-header"><span className="status-env staging">Staging</span></div>
+                <div className="editor-form">
+                  <div className="field-row">
+                    <label className="field-label">Title</label>
+                    <input className="input" type="text" defaultValue="Launching Our New Storefront" readOnly />
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Slug</label>
+                    <input className="input" type="text" defaultValue="launching-our-new-storefront" readOnly />
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Status</label>
+                    <select className="select" defaultValue="published">
+                      <option value="draft">draft</option>
+                      <option value="scheduled">scheduled</option>
+                      <option value="published">published</option>
+                    </select>
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Excerpt</label>
+                    <textarea className="textarea" defaultValue="A quick look at what changed in the redesign." readOnly />
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Tags</label>
+                    <div className="tags-field">
+                      <span className="tag-chip">product<button type="button" className="tag-remove">×</button></span>
+                      <span className="tag-chip">launch<button type="button" className="tag-remove">×</button></span>
+                      <input className="tag-input" type="text" placeholder="Add tag + Enter" readOnly />
+                    </div>
+                  </div>
+                  <div className="field-row">
+                    <label className="field-label">Featured</label>
+                    <button type="button" className="toggle on">
+                      <span className="toggle-knob"></span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          {/* Phase 22: split panes */}
         </div>
       </div>
 

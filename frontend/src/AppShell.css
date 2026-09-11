@@ -80,6 +80,7 @@
   font-size: 11px; font-weight: 700; color: #cccccc; text-transform: uppercase; letter-spacing: .6px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.sidebar-header-actions { display: flex; align-items: center; gap: 2px; }
 .icon-btn {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   width: 22px; height: 22px; border-radius: 4px; border: none;
@@ -109,7 +110,7 @@
 .tree-count { color: #7d7d7d; font-size: 11px; }
 .tree-children { display: flex; flex-direction: column; }
 
-/* Editor column (Phase 22 fills in split panes) */
+/* Editor column */
 .editor-col { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #1e1e1e; }
 
 /* Editor tabs */
@@ -194,6 +195,17 @@
   flex: 1; min-width: 120px; background: transparent; border: none; color: #ffffff;
   font-size: 13px; padding: 5px 2px; outline: none;
 }
+
+/* Split panes */
+.split-view { flex: 1; display: flex; min-height: 0; }
+.split-pane { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; }
+.split-pane::-webkit-scrollbar { width: 12px; }
+.split-pane::-webkit-scrollbar-thumb { background: #3e3e42; border-radius: 6px; }
+.split-pane-header {
+  padding: 8px 24px; border-bottom: 1px solid #2b2b2b;
+  display: flex; align-items: center;
+}
+.split-divider { width: 1px; background: #2b2b2b; flex-shrink: 0; }
 
 /* SQL console */
 .console-view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
