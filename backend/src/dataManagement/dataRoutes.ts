@@ -1,38 +1,9 @@
 import { Router } from "express";
 import multer from "multer";
 import { listCollections, getTableSchema } from "./introspection.js";
-import {
-  listRecords,
-  getRecord,
-  createRecord,
-  updateRecord,
-  deleteRecord,
-  NoPrimaryKeyError,
-} from "./crud.js";
-import { ValidationError } from "./validation.js";
+import { listRecords, getRecord, createRecord, updateRecord, deleteRecord } from "./crud.js";
 import { imageUpload, videoUpload, runUpload, servedPathFor } from "./upload.js";
-
-const ALLOWED_ENGINES = ["postgres", "mysql", "sqlite"] as const;
-type Engine = (typeof ALLOWED_ENGINES)[number];
-
-function isValidEngine(engine: string): engine is Engine {
-  return (ALLOWED_ENGINES as readonly string[]).includes(engine);
-}
-
-async function assertKnownCollection(engine: Engine, collection: string): Promise<void> {
-  const collections = await listCollections(engine);
-  if (!collections.includes(collection)) {
-    throw new ValidationError(`Unknown collection "${collection}"`);
-  }
-}
-
-function handleError(err: unknown, res: import("express").Response): void {
-  if (err instanceof ValidationError || err instanceof NoPrimaryKeyError) {
-    res.status(400).json({ ok: false, error: err.message });
-    return;
-  }
-  res.status(500).json({ ok: false, error: String(err) });
-}
+import { isValidEngine, assertKnownCollection, handleError } from "./routeHelpers.js";
 
 export const dataRoutes = Router();
 

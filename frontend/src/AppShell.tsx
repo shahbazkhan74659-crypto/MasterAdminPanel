@@ -1,6 +1,120 @@
+import { useEffect, useState } from 'react'
 import './AppShell.css'
 
+// Phase 23 scope boundary: this wiring targets exactly one hardcoded record --
+// no picker, no sidebar-tree navigation into it yet (that's Phase 24's job).
+// Kept as a single constant so Phase 24 can swap it for real routed params
+// without touching the fetch/save/deploy logic below.
+const DEMO = { engine: 'postgres', collection: 'posts', id: '1' } as const
+
+type Values = Record<string, unknown>
+
+interface DraftDiffResponse {
+  ok: boolean
+  live?: Values
+  draft?: Values
+  hasDraft?: boolean
+  error?: string
+}
+
+const draftUrl = `/data-api/${DEMO.engine}/${DEMO.collection}/records/${DEMO.id}/draft`
+const deployUrl = `/data-api/${DEMO.engine}/${DEMO.collection}/records/${DEMO.id}/deploy`
+
 function AppShell() {
+  const [live, setLive] = useState<Values | null>(null)
+  const [staged, setStaged] = useState<Values | null>(null)
+  const [baseline, setBaseline] = useState<Values | null>(null)
+  const [hasDraft, setHasDraft] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deploying, setDeploying] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function refresh() {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(draftUrl)
+      const body: DraftDiffResponse = await res.json()
+      if (!res.ok || !body.ok) {
+        setError(body.error ?? `Failed to load record (${res.status})`)
+        setLive(null)
+        setStaged(null)
+        setBaseline(null)
+        setHasDraft(false)
+        return
+      }
+      setLive(body.live ?? null)
+      setStaged(body.draft ?? null)
+      setBaseline(body.draft ?? null)
+      setHasDraft(Boolean(body.hasDraft))
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    refresh()
+  }, [])
+
+  const dirty = staged !== null && baseline !== null && JSON.stringify(staged) !== JSON.stringify(baseline)
+
+  function updateStaged(field: string, value: unknown) {
+    setStaged((prev) => (prev ? { ...prev, [field]: value } : prev))
+  }
+
+  async function handleSave() {
+    if (!staged || saving) return
+    setSaving(true)
+    setError(null)
+    try {
+      const res = await fetch(draftUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: staged }),
+      })
+      const body = await res.json()
+      if (!res.ok || !body.ok) {
+        setError(body.error ?? `Failed to save draft (${res.status})`)
+        return
+      }
+      await refresh()
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeploy() {
+    if (!hasDraft || deploying) return
+    if (!window.confirm('Deploy staged changes to the live database?')) return
+    setDeploying(true)
+    setError(null)
+    try {
+      const res = await fetch(deployUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: true }),
+      })
+      const body = await res.json()
+      if (!res.ok || !body.ok) {
+        setError(body.error ?? `Failed to deploy (${res.status})`)
+        return
+      }
+      await refresh()
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setDeploying(false)
+    }
+  }
+
+  const saveEnabled = dirty && !saving
+  const deployEnabled = hasDraft && !deploying
+
   return (
     <div className="app">
       <div className="titlebar">
@@ -13,7 +127,7 @@ function AppShell() {
           </span>
           <span className="app-name">Master Admin Panel</span>
         </div>
-        <div className="titlebar-center">{/* Phase 23: real breadcrumb path */}</div>
+        <div className="titlebar-center">{/* Phase 24: real breadcrumb path */}</div>
         <div className="titlebar-right">
           <button type="button" className="btn-chip">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
@@ -191,95 +305,131 @@ function AppShell() {
           <div className="editor-area">
             <div className="editor-toolbar">
               <span className="breadcrumb">Northwind Blog&nbsp;&nbsp;›&nbsp;&nbsp;Posts&nbsp;&nbsp;›&nbsp;&nbsp;Launching Our New Storefront</span>
-              <button type="button" className="btn-save">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 2h9l3 3v9a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                  <path d="M4.5 2v4h5V2" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-                </svg>
-                Save
-              </button>
+              <div className="editor-toolbar-right">
+                <button type="button" className={`btn-save${saveEnabled ? ' enabled' : ''}`} disabled={!saveEnabled} onClick={handleSave}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 2h9l3 3v9a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                    <path d="M4.5 2v4h5V2" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                  </svg>
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
+                <button type="button" className={`btn-deploy${deployEnabled ? ' enabled' : ''}`} disabled={!deployEnabled} onClick={handleDeploy}>
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 1.5v9M4 6.5l4-4 4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2.5 11v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {deploying ? 'Deploying…' : 'Deploy'}
+                </button>
+              </div>
             </div>
-            <div className="split-view">
-              <div className="split-pane">
-                <div className="split-pane-header"><span className="status-env prod">Production</span></div>
-                <div className="editor-form">
-                  <div className="field-row">
-                    <label className="field-label">Title</label>
-                    <input className="input" type="text" defaultValue="Launching Our New Storefront" readOnly />
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Slug</label>
-                    <input className="input" type="text" defaultValue="launching-our-new-storefront" readOnly />
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Status</label>
-                    <select className="select" defaultValue="published">
-                      <option value="draft">draft</option>
-                      <option value="scheduled">scheduled</option>
-                      <option value="published">published</option>
-                    </select>
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Excerpt</label>
-                    <textarea className="textarea" defaultValue="A quick look at what changed in the redesign." readOnly />
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Tags</label>
-                    <div className="tags-field">
-                      <span className="tag-chip">product<button type="button" className="tag-remove">×</button></span>
-                      <span className="tag-chip">launch<button type="button" className="tag-remove">×</button></span>
-                      <input className="tag-input" type="text" placeholder="Add tag + Enter" readOnly />
+            {error && <div className="console-error staging-error">{error}</div>}
+            {loading ? (
+              <div className="console-placeholder">Loading record…</div>
+            ) : !live ? (
+              <div className="console-placeholder">Record not found.</div>
+            ) : (
+              <div className="split-view">
+                <div className="split-pane">
+                  <div className="split-pane-header"><span className="status-env prod">Production</span></div>
+                  <div className="editor-form">
+                    <div className="field-row">
+                      <label className="field-label">Title</label>
+                      <input className="input" type="text" value={String(live.title ?? '')} readOnly />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Slug</label>
+                      <input className="input" type="text" value={String(live.slug ?? '')} readOnly />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Status</label>
+                      <select className="select" value={String(live.status ?? '')} disabled>
+                        <option value="draft">draft</option>
+                        <option value="scheduled">scheduled</option>
+                        <option value="published">published</option>
+                      </select>
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Excerpt</label>
+                      <textarea className="textarea" value={String(live.excerpt ?? '')} readOnly />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Tags</label>
+                      <input className="input" type="text" value={String(live.tags ?? '')} readOnly />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Featured</label>
+                      <button type="button" className={`toggle${live.featured ? ' on' : ''}`} disabled>
+                        <span className="toggle-knob"></span>
+                      </button>
                     </div>
                   </div>
-                  <div className="field-row">
-                    <label className="field-label">Featured</label>
-                    <button type="button" className="toggle on">
-                      <span className="toggle-knob"></span>
-                    </button>
+                </div>
+                <div className="split-divider"></div>
+                <div className="split-pane">
+                  <div className="split-pane-header"><span className="status-env staging">Staging</span></div>
+                  <div className="editor-form">
+                    <div className="field-row">
+                      <label className="field-label">Title</label>
+                      <input
+                        className="input"
+                        type="text"
+                        value={String(staged?.title ?? '')}
+                        onChange={(e) => updateStaged('title', e.target.value)}
+                      />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Slug</label>
+                      <input
+                        className="input"
+                        type="text"
+                        value={String(staged?.slug ?? '')}
+                        onChange={(e) => updateStaged('slug', e.target.value)}
+                      />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Status</label>
+                      <select
+                        className="select"
+                        value={String(staged?.status ?? '')}
+                        onChange={(e) => updateStaged('status', e.target.value)}
+                      >
+                        <option value="draft">draft</option>
+                        <option value="scheduled">scheduled</option>
+                        <option value="published">published</option>
+                      </select>
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Excerpt</label>
+                      <textarea
+                        className="textarea"
+                        value={String(staged?.excerpt ?? '')}
+                        onChange={(e) => updateStaged('excerpt', e.target.value)}
+                      />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Tags</label>
+                      <input
+                        className="input"
+                        type="text"
+                        value={String(staged?.tags ?? '')}
+                        placeholder="comma,separated,tags"
+                        onChange={(e) => updateStaged('tags', e.target.value)}
+                      />
+                    </div>
+                    <div className="field-row">
+                      <label className="field-label">Featured</label>
+                      <button
+                        type="button"
+                        className={`toggle${staged?.featured ? ' on' : ''}`}
+                        onClick={() => updateStaged('featured', !staged?.featured)}
+                      >
+                        <span className="toggle-knob"></span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="split-divider"></div>
-              <div className="split-pane">
-                <div className="split-pane-header"><span className="status-env staging">Staging</span></div>
-                <div className="editor-form">
-                  <div className="field-row">
-                    <label className="field-label">Title</label>
-                    <input className="input" type="text" defaultValue="Launching Our New Storefront" readOnly />
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Slug</label>
-                    <input className="input" type="text" defaultValue="launching-our-new-storefront" readOnly />
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Status</label>
-                    <select className="select" defaultValue="published">
-                      <option value="draft">draft</option>
-                      <option value="scheduled">scheduled</option>
-                      <option value="published">published</option>
-                    </select>
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Excerpt</label>
-                    <textarea className="textarea" defaultValue="A quick look at what changed in the redesign." readOnly />
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Tags</label>
-                    <div className="tags-field">
-                      <span className="tag-chip">product<button type="button" className="tag-remove">×</button></span>
-                      <span className="tag-chip">launch<button type="button" className="tag-remove">×</button></span>
-                      <input className="tag-input" type="text" placeholder="Add tag + Enter" readOnly />
-                    </div>
-                  </div>
-                  <div className="field-row">
-                    <label className="field-label">Featured</label>
-                    <button type="button" className="toggle on">
-                      <span className="toggle-knob"></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

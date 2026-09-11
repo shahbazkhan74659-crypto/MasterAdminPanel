@@ -149,6 +149,19 @@
 }
 .btn-save.enabled { background: #0e639c; color: #ffffff; border-color: #0e639c; cursor: pointer; }
 .btn-save.enabled:hover { background: #1177bb; }
+.editor-toolbar-right { display: flex; align-items: center; gap: 10px; }
+/* Deploy reuses .btn-save's box model with the app's existing amber "staging"
+   accent (see .status-env.staging below) rather than a new token -- shipping to
+   live is a more consequential action than staging a draft, so it stays visually
+   distinct from Save. */
+.btn-deploy {
+  display: flex; align-items: center; gap: 6px;
+  background: #3c3c3c; color: #7d7d7d; border: 1px solid #4a4a4a;
+  border-radius: 4px; padding: 5px 12px; font-size: 12.5px; cursor: default;
+}
+.btn-deploy.enabled { background: #9a7215; color: #ffffff; border-color: #9a7215; cursor: pointer; }
+.btn-deploy.enabled:hover { background: #b98617; }
+.staging-error { margin: 12px 24px 0; }
 
 /* Editor pane */
 .editor-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }

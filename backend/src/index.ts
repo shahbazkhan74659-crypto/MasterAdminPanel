@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { authRoutes } from "./auth/authRoutes.js";
 import { sqlConsoleRoutes } from "./sqlConsole/sqlConsoleRoutes.js";
 import { dataRoutes } from "./dataManagement/dataRoutes.js";
+import { stagingRoutes } from "./dataManagement/stagingRoutes.js";
 import { pool } from "./db/pool.js";
 import { ensureSchema } from "./db/schema.js";
 import { initConnections } from "./sqlConsole/connections.js";
@@ -48,6 +49,7 @@ app.get("/health", (_req, res) => {
 app.use("/auth-api", authRoutes);
 app.use("/sql-console-api", sqlConsoleRoutes);
 app.use("/data-api", dataRoutes);
+app.use("/data-api", stagingRoutes);
 
 async function bootstrap() {
   await ensureSchema();
