@@ -138,4 +138,4 @@ This project keeps a living, seven-file Markdown documentation system under `Pro
 
 ## License
 
-Not yet decided.
+MIT — see [`LICENSE`](LICENSE).
